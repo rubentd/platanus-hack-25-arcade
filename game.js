@@ -257,7 +257,7 @@ const RESOURCES = {
   FUNDING: { color: 0xffd700, icon: 'F', points: 8 }
 };
 
-const BASE_SPEED = 5
+const BASE_SPEED = 150;
 
 const MAX_ROUNDS = 3;
 const CHARACTER_SIZE = 98;
@@ -267,8 +267,8 @@ const CAFFEINE_DURATION = 5000;
 const COFFEE_SPAWN_INTERVAL = 15000;
 const COFFEE_MAX_ON_FIELD = 2;
 const PLAYERS_SPEED = BASE_SPEED;
-const BUG_SPEED = BASE_SPEED * .75;
-const PROJECTILE_SPEED = BASE_SPEED;
+const BUG_SPEED = BASE_SPEED * 0.75;
+const PROJECTILE_SPEED = BASE_SPEED * 1.25;
 const PROJECTILE_COOLDOWN = 500;
 const PROJECTILE_PENALTY = 10;
 const INVULNERABILITY_DURATION = 900;
@@ -277,8 +277,8 @@ const COOLDOWN_BAR_WIDTH = 4;
 const COOLDOWN_BAR_COLOR = 0xffee55;
 const BACKGROUND_COLORS = [0x222222, 0x151515, 0x111111];
 const TRAIL_MAX_CLONES = 10;
-const TRAIL_CAPTURE_INTERVAL = 4;
 const TRAIL_FADE_SPEED = 0.001;
+const TRAIL_CAPTURE_INTERVAL = 4;
 const BUG_MESSAGES = [
   'RuntimeError: El modelo alcanzó la autoconciencia. Apagando para seguridad.',
   'CUDAError: La GPU decidió unirse a OpenAI.',
@@ -398,7 +398,7 @@ function preload() {
   this.load.image('coffeeIcon', COFFEE_ICON);
 }
 
-function create() {
+function create() {  
   backgroundLayer = this.add.graphics();
   backgroundLayer.setDepth(-5);
   drawBackgroundPattern(backgroundLayer);
@@ -549,25 +549,27 @@ function update(time, delta) {
   } else if (typeof time === 'number') {
     lastUpdateTime = time;
   }
+  const deltaSeconds = (delta && delta > 0 ? delta : 16.6667) / 1000;
   // Player movement
-  const baseSpeed = PLAYERS_SPEED;
-  const speed1 = baseSpeed * (p1Boost > 0 ? 1.5 : 1);
-  const speed2 = baseSpeed * (p2Boost > 0 ? 1.5 : 1);
+  const player1Speed = PLAYERS_SPEED * (p1Boost > 0 ? 1.5 : 1);
+  const player2Speed = PLAYERS_SPEED * (p2Boost > 0 ? 1.5 : 1);
+  const move1 = player1Speed * deltaSeconds;
+  const move2 = player2Speed * deltaSeconds;
   
   const prevP1X = p1.x;
   const prevP1Y = p1.y;
   const prevP2X = p2.x;
   const prevP2Y = p2.y;
   
-  if (this.keys.w.isDown) p1.y -= speed1;
-  if (this.keys.s.isDown) p1.y += speed1;
-  if (this.keys.a.isDown) p1.x -= speed1;
-  if (this.keys.d.isDown) p1.x += speed1;
+  if (this.keys.w.isDown) p1.y -= move1;
+  if (this.keys.s.isDown) p1.y += move1;
+  if (this.keys.a.isDown) p1.x -= move1;
+  if (this.keys.d.isDown) p1.x += move1;
   
-  if (this.keys.up.isDown) p2.y -= speed2;
-  if (this.keys.down.isDown) p2.y += speed2;
-  if (this.keys.left.isDown) p2.x -= speed2;
-  if (this.keys.right.isDown) p2.x += speed2;
+  if (this.keys.up.isDown) p2.y -= move2;
+  if (this.keys.down.isDown) p2.y += move2;
+  if (this.keys.left.isDown) p2.x -= move2;
+  if (this.keys.right.isDown) p2.x += move2;
   
   // Boundaries
   p1.x = Phaser.Math.Clamp(p1.x, PLAYFIELD_LEFT_MARGIN, SCREEN_WIDTH - PLAYFIELD_RIGHT_MARGIN);
@@ -616,8 +618,8 @@ function update(time, delta) {
       evt.vy = Math.sin(angle) * BUG_SPEED;
     }
 
-    evt.x += evt.vx;
-    evt.y += evt.vy;
+    evt.x += evt.vx * deltaSeconds;
+    evt.y += evt.vy * deltaSeconds;
 
     const minX = PLAYFIELD_LEFT_MARGIN;
     const maxX = SCREEN_WIDTH - PLAYFIELD_RIGHT_MARGIN;
@@ -687,11 +689,10 @@ function update(time, delta) {
     }
   }
   
-  const dt = delta / 16.666;
   for (let i = projectiles.length - 1; i >= 0; i--) {
     const proj = projectiles[i];
-    proj.x += proj.vx * dt;
-    proj.y += proj.vy * dt;
+    proj.x += proj.vx * deltaSeconds;
+    proj.y += proj.vy * deltaSeconds;
     const targetPlayer = proj.owner === 1 ? p2 : p1;
     const bounds = getPlayerBounds(targetPlayer);
     if (proj.sprite) {
@@ -830,6 +831,7 @@ function depositResources(player, playerNum, scene) {
 }
 
 function attemptShoot(scene, shooter, target, playerNum) {
+  const projectileSpeed = PROJECTILE_SPEED;
   if (!scene || !shooter || !target) return;
   if (gameOver) return;
   const now = (scene.time && typeof scene.time.now === 'number')
@@ -852,8 +854,8 @@ function attemptShoot(scene, shooter, target, playerNum) {
   const length = Math.hypot(dx, dy);
   if (length < 1) return;
 
-  const vx = (dx / length) * PROJECTILE_SPEED;
-  const vy = (dy / length) * PROJECTILE_SPEED;
+  const vx = (dx / length) * projectileSpeed;
+  const vy = (dy / length) * projectileSpeed;
   const startX = shooter.x;
   const startY = shooter.y - CHARACTER_SIZE * 0.6;
   const sprite = scene.add.circle(startX, startY, 6, shooter.color)
