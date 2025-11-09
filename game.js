@@ -1,75 +1,26 @@
-// Platanus Hack 25: Snake Game
-// Navigate the snake around the "PLATANUS HACK ARCADE" title made of blocks!
-
-// =============================================================================
-// ARCADE BUTTON MAPPING - COMPLETE TEMPLATE
-// =============================================================================
-// Reference: See button-layout.webp at hack.platan.us/assets/images/arcade/
-//
-// Maps arcade button codes to keyboard keys for local testing.
-// Each arcade code can map to multiple keyboard keys (array values).
-// The arcade cabinet sends codes like 'P1U', 'P1A', etc. when buttons are pressed.
-//
-// To use in your game:
-//   if (key === 'P1U') { ... }  // Works on both arcade and local (via keyboard)
-//
-// CURRENT GAME USAGE (Snake):
-//   - P1U/P1D/P1L/P1R (Joystick) → Snake Direction
-//   - P1A (Button A) or START1 (Start Button) → Restart Game
-// =============================================================================
+// Race to AGI - Two-Player Resource Collection Game
+// Collect Data, Compute, and Funding to train your AGI before your opponent!
 
 const ARCADE_CONTROLS = {
-  // ===== PLAYER 1 CONTROLS =====
-  // Joystick - Left hand on WASD
-  'P1U': ['w'],
-  'P1D': ['s'],
-  'P1L': ['a'],
-  'P1R': ['d'],
-  'P1DL': null,  // Diagonal down-left (no keyboard default)
-  'P1DR': null,  // Diagonal down-right (no keyboard default)
-
-  // Action Buttons - Right hand on home row area (ergonomic!)
-  // Top row (ABC): U, I, O  |  Bottom row (XYZ): J, K, L
-  'P1A': ['u'],
-  'P1B': ['i'],
-  'P1C': ['o'],
-  'P1X': ['j'],
-  'P1Y': ['k'],
-  'P1Z': ['l'],
-
-  // Start Button
+  // Player 1 - WASD + U for action
+  'P1U': ['w'], 'P1D': ['s'], 'P1L': ['a'], 'P1R': ['d'],
+  'P1A': ['u'], 'P1B': ['i'], 'P1C': ['o'],
+  'P1X': ['j'], 'P1Y': ['k'], 'P1Z': ['l'],
   'START1': ['1', 'Enter'],
-
-  // ===== PLAYER 2 CONTROLS =====
-  // Joystick - Right hand on Arrow Keys
-  'P2U': ['ArrowUp'],
-  'P2D': ['ArrowDown'],
-  'P2L': ['ArrowLeft'],
-  'P2R': ['ArrowRight'],
-  'P2DL': null,  // Diagonal down-left (no keyboard default)
-  'P2DR': null,  // Diagonal down-right (no keyboard default)
-
-  // Action Buttons - Left hand (avoiding P1's WASD keys)
-  // Top row (ABC): R, T, Y  |  Bottom row (XYZ): F, G, H
-  'P2A': ['r'],
-  'P2B': ['t'],
-  'P2C': ['y'],
-  'P2X': ['f'],
-  'P2Y': ['g'],
-  'P2Z': ['h'],
-
-  // Start Button
+  
+  // Player 2 - Arrow keys + R for action
+  'P2U': ['ArrowUp'], 'P2D': ['ArrowDown'], 
+  'P2L': ['ArrowLeft'], 'P2R': ['ArrowRight'],
+  'P2A': ['r'], 'P2B': ['t'], 'P2C': ['y'],
+  'P2X': ['f'], 'P2Y': ['g'], 'P2Z': ['h'],
   'START2': ['2']
 };
 
-// Build reverse lookup: keyboard key → arcade button code
 const KEYBOARD_TO_ARCADE = {};
-for (const [arcadeCode, keyboardKeys] of Object.entries(ARCADE_CONTROLS)) {
-  if (keyboardKeys) {
-    // Handle both array and single value
-    const keys = Array.isArray(keyboardKeys) ? keyboardKeys : [keyboardKeys];
-    keys.forEach(key => {
-      KEYBOARD_TO_ARCADE[key] = arcadeCode;
+for (const [code, keys] of Object.entries(ARCADE_CONTROLS)) {
+  if (keys) {
+    (Array.isArray(keys) ? keys : [keys]).forEach(k => {
+      KEYBOARD_TO_ARCADE[k] = code;
     });
   }
 }
@@ -78,359 +29,392 @@ const config = {
   type: Phaser.AUTO,
   width: 800,
   height: 600,
-  backgroundColor: '#000000',
-  scene: {
-    create: create,
-    update: update
-  }
+  backgroundColor: '#1a1a2e',
+  scene: { create, update }
 };
 
 const game = new Phaser.Game(config);
 
-// Game variables
-let snake = [];
-let snakeSize = 15;
-let direction = { x: 1, y: 0 };
-let nextDirection = { x: 1, y: 0 };
-let food;
-let score = 0;
-let scoreText;
-let titleBlocks = [];
-let gameOver = false;
-let moveTimer = 0;
-let moveDelay = 100;  // Faster initial speed (was 150ms)
-let graphics;
-
-// Pixel font patterns (5x5 grid for each letter)
-const letters = {
-  P: [[1,1,1,1],[1,0,0,1],[1,1,1,1],[1,0,0,0],[1,0,0,0]],
-  L: [[1,0,0,0],[1,0,0,0],[1,0,0,0],[1,0,0,0],[1,1,1,1]],
-  A: [[0,1,1,0],[1,0,0,1],[1,1,1,1],[1,0,0,1],[1,0,0,1]],
-  T: [[1,1,1,1],[0,1,0,0],[0,1,0,0],[0,1,0,0],[0,1,0,0]],
-  N: [[1,0,0,1],[1,1,0,1],[1,0,1,1],[1,0,0,1],[1,0,0,1]],
-  U: [[1,0,0,1],[1,0,0,1],[1,0,0,1],[1,0,0,1],[1,1,1,1]],
-  S: [[0,1,1,1],[1,0,0,0],[0,1,1,0],[0,0,0,1],[1,1,1,0]],
-  H: [[1,0,0,1],[1,0,0,1],[1,1,1,1],[1,0,0,1],[1,0,0,1]],
-  C: [[0,1,1,1],[1,0,0,0],[1,0,0,0],[1,0,0,0],[0,1,1,1]],
-  K: [[1,0,0,1],[1,0,1,0],[1,1,0,0],[1,0,1,0],[1,0,0,1]],
-  '2': [[1,1,1,0],[0,0,0,1],[0,1,1,0],[1,0,0,0],[1,1,1,1]],
-  '5': [[1,1,1,1],[1,0,0,0],[1,1,1,0],[0,0,0,1],[1,1,1,0]],
-  ':': [[0,0,0,0],[0,1,0,0],[0,0,0,0],[0,1,0,0],[0,0,0,0]],
-  R: [[1,1,1,0],[1,0,0,1],[1,1,1,0],[1,0,1,0],[1,0,0,1]],
-  D: [[1,1,1,0],[1,0,0,1],[1,0,0,1],[1,0,0,1],[1,1,1,0]],
-  E: [[1,1,1,1],[1,0,0,0],[1,1,1,0],[1,0,0,0],[1,1,1,1]]
+// Resource types
+const RESOURCES = {
+  DATA: { color: 0x00ffff, icon: 'D', points: 20 },
+  COMPUTE: { color: 0xff6b35, icon: 'C', points: 25 },
+  FUNDING: { color: 0xffd700, icon: 'F', points: 15 }
 };
 
-// Bold font for ARCADE (filled/solid style)
-const boldLetters = {
-  A: [[1,1,1,1,1],[1,1,0,1,1],[1,1,1,1,1],[1,1,0,1,1],[1,1,0,1,1]],
-  R: [[1,1,1,1,0],[1,1,0,1,1],[1,1,1,1,0],[1,1,0,1,1],[1,1,0,1,1]],
-  C: [[1,1,1,1,1],[1,1,0,0,0],[1,1,0,0,0],[1,1,0,0,0],[1,1,1,1,1]],
-  D: [[1,1,1,1,0],[1,1,0,1,1],[1,1,0,1,1],[1,1,0,1,1],[1,1,1,1,0]],
-  E: [[1,1,1,1,1],[1,1,0,0,0],[1,1,1,1,0],[1,1,0,0,0],[1,1,1,1,1]]
-};
+const EVENTS = [
+  { name: 'BUG', color: 0xff0000, penalty: 10, icon: 'X' },
+  { name: 'SCANDAL', color: 0xff00ff, penalty: 15, icon: '!' },
+  { name: 'LEAK', color: 0xff6600, penalty: 12, icon: '?' }
+];
+
+// Game state
+let p1, p2, graphics, resources = [], events = [], gameOver = false;
+let timer = 30000, timerText, p1Progress = 0, p2Progress = 0;
+let p1ScoreText, p2ScoreText, statusText;
+let resourceTimer = 0, eventTimer = 0;
+let p1Speed = 3, p2Speed = 3;
+let p1Boost = 0, p2Boost = 0;
 
 function create() {
-  const scene = this;
   graphics = this.add.graphics();
-
-  // Build "PLATANUS HACK ARCADE" in cyan - centered and grid-aligned
-  // PLATANUS: 8 letters × (4 cols + 1 spacing) = 40 blocks, but last letter no spacing = 39 blocks × 15px = 585px
-  let x = Math.floor((800 - 585) / 2 / snakeSize) * snakeSize;
-  let y = Math.floor(180 / snakeSize) * snakeSize;
-  'PLATANUS'.split('').forEach(char => {
-    x = drawLetter(char, x, y, 0x00ffff);
+  
+  // Player 1 (Blue startup - top left)
+  p1 = {
+    x: 100, y: 100,
+    color: 0x0099ff,
+    inventory: { DATA: 0, COMPUTE: 0, FUNDING: 0 },
+    base: { x: 50, y: 50, w: 100, h: 60 }
+  };
+  
+  // Player 2 (Green startup - bottom right)
+  p2 = {
+    x: 700, y: 500,
+    color: 0x00ff66,
+    inventory: { DATA: 0, COMPUTE: 0, FUNDING: 0 },
+    base: { x: 650, y: 490, w: 100, h: 60 }
+  };
+  
+  // UI
+  p1ScoreText = this.add.text(20, 15, 'P1: 0%', { 
+    fontSize: '20px', color: '#0099ff', fontWeight: 'bold'
   });
-
-  // HACK: 4 letters × (4 cols + 1 spacing) = 20 blocks, but last letter no spacing = 19 blocks × 15px = 285px
-  x = Math.floor((800 - 285) / 2 / snakeSize) * snakeSize;
-  y = Math.floor(280 / snakeSize) * snakeSize;
-  'HACK'.split('').forEach(char => {
-    x = drawLetter(char, x, y, 0x00ffff);
-  });
-
-  // ARCADE: 6 letters × (5 cols + 1 spacing) = 36 blocks, but last letter no spacing = 35 blocks × 15px = 525px
-  x = Math.floor((800 - 525) / 2 / snakeSize) * snakeSize;
-  y = Math.floor(380 / snakeSize) * snakeSize;
-  'ARCADE'.split('').forEach(char => {
-    x = drawLetter(char, x, y, 0xff00ff, true);
-  });
-
-  // Score display
-  scoreText = this.add.text(16, 16, 'Score: 0', {
-    fontSize: '24px',
-    fontFamily: 'Arial, sans-serif',
-    color: '#00ff00'
-  });
-
+  
+  p2ScoreText = this.add.text(720, 15, 'P2: 0%', { 
+    fontSize: '20px', color: '#00ff66', fontWeight: 'bold'
+  }).setOrigin(1, 0);
+  
+  timerText = this.add.text(400, 15, '30s', { 
+    fontSize: '24px', color: '#ffff00', fontWeight: 'bold'
+  }).setOrigin(0.5, 0);
+  
+  statusText = this.add.text(400, 580, 'Collect resources and deposit at your base!', {
+    fontSize: '14px', color: '#888888'
+  }).setOrigin(0.5, 1);
+  
   // Instructions
-  this.add.text(400, 560, 'Use Joystick to Move | Avoid Walls, Yourself & The Title!', {
-    fontSize: '16px',
-    fontFamily: 'Arial, sans-serif',
-    color: '#888888',
-    align: 'center'
-  }).setOrigin(0.5);
-
-  // Initialize snake (start top left)
-  snake = [
-    { x: 75, y: 60 },
-    { x: 60, y: 60 },
-    { x: 45, y: 60 }
-  ];
-
-  // Spawn initial food
-  spawnFood();
-
-  // Keyboard and Arcade Button input
-  this.input.keyboard.on('keydown', (event) => {
-    // Normalize keyboard input to arcade codes for easier testing
-    const key = KEYBOARD_TO_ARCADE[event.key] || event.key;
-
-    // Restart game (arcade buttons only)
-    if (gameOver && (key === 'P1A' || key === 'START1')) {
-      restartGame(scene);
-      return;
-    }
-
-    // Direction controls (keyboard keys get mapped to arcade codes)
-    if (key === 'P1U' && direction.y === 0) {
-      nextDirection = { x: 0, y: -1 };
-    } else if (key === 'P1D' && direction.y === 0) {
-      nextDirection = { x: 0, y: 1 };
-    } else if (key === 'P1L' && direction.x === 0) {
-      nextDirection = { x: -1, y: 0 };
-    } else if (key === 'P1R' && direction.x === 0) {
-      nextDirection = { x: 1, y: 0 };
+  this.add.text(400, 50, 'P1: WASD + U to deposit | P2: Arrows + R to deposit', {
+    fontSize: '12px', color: '#666666'
+  }).setOrigin(0.5, 0);
+  
+  // Input
+  this.keys = this.input.keyboard.addKeys({
+    w: 'W', s: 'S', a: 'A', d: 'D', u: 'U',
+    up: 'UP', down: 'DOWN', left: 'LEFT', right: 'RIGHT', r: 'R',
+    one: 'ONE', two: 'TWO', enter: 'ENTER'
+  });
+  
+  this.input.keyboard.on('keydown', (e) => {
+    const key = KEYBOARD_TO_ARCADE[e.key] || e.key;
+    if (gameOver && (key === 'START1' || key === 'START2')) {
+      restartGame(this);
     }
   });
-
+  
+  // Spawn initial resources
+  for (let i = 0; i < 5; i++) spawnResource();
+  
   playTone(this, 440, 0.1);
 }
 
-function drawLetter(char, startX, startY, color, useBold = false) {
-  const pattern = useBold ? boldLetters[char] : letters[char];
-  if (!pattern) return startX + 30;
-
-  for (let row = 0; row < pattern.length; row++) {
-    for (let col = 0; col < pattern[row].length; col++) {
-      if (pattern[row][col]) {
-        const blockX = startX + col * snakeSize;
-        const blockY = startY + row * snakeSize;
-        titleBlocks.push({ x: blockX, y: blockY, color: color });
-      }
-    }
-  }
-  return startX + (pattern[0].length + 1) * snakeSize;
-}
-
-function update(_time, delta) {
+function update(time, delta) {
   if (gameOver) return;
-
-  moveTimer += delta;
-  if (moveTimer >= moveDelay) {
-    moveTimer = 0;
-    direction = nextDirection;
-    moveSnake(this);
-  }
-
-  drawGame();
-}
-
-function moveSnake(scene) {
-  const head = snake[0];
-  const newHead = {
-    x: head.x + direction.x * snakeSize,
-    y: head.y + direction.y * snakeSize
-  };
-
-  // Check wall collision
-  if (newHead.x < 0 || newHead.x >= 800 || newHead.y < 0 || newHead.y >= 600) {
-    endGame(scene);
+  
+  // Timer
+  timer -= delta;
+  if (timer <= 0) {
+    timer = 0;
+    endGame(this);
     return;
   }
-
-  // Check self collision
-  for (let segment of snake) {
-    if (segment.x === newHead.x && segment.y === newHead.y) {
-      endGame(scene);
-      return;
-    }
+  timerText.setText(Math.ceil(timer / 1000) + 's');
+  
+  // Player movement
+  const speed1 = p1Boost > 0 ? p1Speed * 1.5 : p1Speed;
+  const speed2 = p2Boost > 0 ? p2Speed * 1.5 : p2Speed;
+  
+  if (this.keys.w.isDown) p1.y -= speed1;
+  if (this.keys.s.isDown) p1.y += speed1;
+  if (this.keys.a.isDown) p1.x -= speed1;
+  if (this.keys.d.isDown) p1.x += speed1;
+  
+  if (this.keys.up.isDown) p2.y -= speed2;
+  if (this.keys.down.isDown) p2.y += speed2;
+  if (this.keys.left.isDown) p2.x -= speed2;
+  if (this.keys.right.isDown) p2.x += speed2;
+  
+  // Boundaries
+  p1.x = Phaser.Math.Clamp(p1.x, 15, 785);
+  p1.y = Phaser.Math.Clamp(p1.y, 80, 570);
+  p2.x = Phaser.Math.Clamp(p2.x, 15, 785);
+  p2.y = Phaser.Math.Clamp(p2.y, 80, 570);
+  
+  // Deposit action
+  if (Phaser.Input.Keyboard.JustDown(this.keys.u)) {
+    depositResources(p1, 1, this);
   }
-
-  // Check title block collision
-  for (let block of titleBlocks) {
-    if (newHead.x === block.x && newHead.y === block.y) {
-      endGame(scene);
-      return;
-    }
+  if (Phaser.Input.Keyboard.JustDown(this.keys.r)) {
+    depositResources(p2, 2, this);
   }
-
-  snake.unshift(newHead);
-
-  // Check food collision
-  if (newHead.x === food.x && newHead.y === food.y) {
-    score += 10;
-    scoreText.setText('Score: ' + score);
-    spawnFood();
-    playTone(scene, 880, 0.1);
-
-    if (moveDelay > 50) {  // Faster max speed (was 80ms)
-      moveDelay -= 2;
+  
+  // Resource collection
+  resources.forEach((res, idx) => {
+    if (dist(p1, res) < 20) {
+      p1.inventory[res.type]++;
+      resources.splice(idx, 1);
+      playTone(this, 660, 0.08);
+      updateStatus('P1 collected ' + res.type);
+    } else if (dist(p2, res) < 20) {
+      p2.inventory[res.type]++;
+      resources.splice(idx, 1);
+      playTone(this, 880, 0.08);
+      updateStatus('P2 collected ' + res.type);
     }
-  } else {
-    snake.pop();
+  });
+  
+  // Event handling
+  events.forEach((evt, idx) => {
+    if (dist(p1, evt) < 20) {
+      p1Progress = Math.max(0, p1Progress - evt.penalty);
+      events.splice(idx, 1);
+      playTone(this, 220, 0.15);
+      updateStatus('P1 hit ' + evt.name + '! -' + evt.penalty + '%');
+      updateProgress();
+    } else if (dist(p2, evt) < 20) {
+      p2Progress = Math.max(0, p2Progress - evt.penalty);
+      events.splice(idx, 1);
+      playTone(this, 220, 0.15);
+      updateStatus('P2 hit ' + evt.name + '! -' + evt.penalty + '%');
+      updateProgress();
+    }
+  });
+  
+  // Spawn resources
+  resourceTimer += delta;
+  if (resourceTimer > 2000 && resources.length < 10) {
+    resourceTimer = 0;
+    spawnResource();
+  }
+  
+  // Spawn events
+  eventTimer += delta;
+  if (eventTimer > 5000 && events.length < 3) {
+    eventTimer = 0;
+    spawnEvent();
+  }
+  
+  // Check win condition
+  if (p1Progress >= 100 || p2Progress >= 100) {
+    endGame(this);
+  }
+  
+  // Update boosts
+  if (p1Boost > 0) p1Boost -= delta;
+  if (p2Boost > 0) p2Boost -= delta;
+  
+  draw();
+}
+
+function depositResources(player, playerNum, scene) {
+  const base = player.base;
+  const px = player.x, py = player.y;
+  
+  // Check if near base
+  if (px >= base.x && px <= base.x + base.w && 
+      py >= base.y && py <= base.y + base.h) {
+    
+    let total = 0;
+    for (const type in player.inventory) {
+      total += player.inventory[type] * RESOURCES[type].points;
+      player.inventory[type] = 0;
+    }
+    
+    if (total > 0) {
+      if (playerNum === 1) {
+        p1Progress = Math.min(100, p1Progress + total);
+      } else {
+        p2Progress = Math.min(100, p2Progress + total);
+      }
+      updateProgress();
+      playTone(scene, 1200, 0.12);
+      updateStatus('P' + playerNum + ' deposited! +' + total + '%');
+      
+      // Random caffeine boost
+      if (Math.random() < 0.15) {
+        if (playerNum === 1) p1Boost = 2000;
+        else p2Boost = 2000;
+        updateStatus('P' + playerNum + ' got CAFFEINE BOOST!');
+      }
+    }
   }
 }
 
-function spawnFood() {
-  let valid = false;
-  let attempts = 0;
-
-  while (!valid && attempts < 100) {
-    attempts++;
-    const gridX = Math.floor(Math.random() * 53) * snakeSize;
-    const gridY = Math.floor(Math.random() * 40) * snakeSize;
-
-    // Check not on snake
-    let onSnake = false;
-    for (let segment of snake) {
-      if (segment.x === gridX && segment.y === gridY) {
-        onSnake = true;
-        break;
-      }
-    }
-
-    // Check not on title blocks
-    let onTitle = false;
-    for (let block of titleBlocks) {
-      if (gridX === block.x && gridY === block.y) {
-        onTitle = true;
-        break;
-      }
-    }
-
-    if (!onSnake && !onTitle) {
-      food = { x: gridX, y: gridY };
-      valid = true;
-    }
-  }
+function spawnResource() {
+  const types = Object.keys(RESOURCES);
+  const type = types[Math.floor(Math.random() * types.length)];
+  resources.push({
+    x: 100 + Math.random() * 600,
+    y: 100 + Math.random() * 440,
+    type: type,
+    ...RESOURCES[type]
+  });
 }
 
-function drawGame() {
+function spawnEvent() {
+  const evt = EVENTS[Math.floor(Math.random() * EVENTS.length)];
+  events.push({
+    x: 100 + Math.random() * 600,
+    y: 100 + Math.random() * 440,
+    ...evt
+  });
+}
+
+function draw() {
   graphics.clear();
-
-  // Draw title blocks
-  titleBlocks.forEach(block => {
-    graphics.fillStyle(block.color, 1);
-    graphics.fillRect(block.x, block.y, snakeSize - 2, snakeSize - 2);
+  
+  // Draw bases
+  graphics.fillStyle(p1.color, 0.3);
+  graphics.fillRect(p1.base.x, p1.base.y, p1.base.w, p1.base.h);
+  graphics.lineStyle(3, p1.color, 1);
+  graphics.strokeRect(p1.base.x, p1.base.y, p1.base.w, p1.base.h);
+  
+  graphics.fillStyle(p2.color, 0.3);
+  graphics.fillRect(p2.base.x, p2.base.y, p2.base.w, p2.base.h);
+  graphics.lineStyle(3, p2.color, 1);
+  graphics.strokeRect(p2.base.x, p2.base.y, p2.base.w, p2.base.h);
+  
+  // Draw resources
+  resources.forEach(res => {
+    graphics.fillStyle(res.color, 1);
+    graphics.fillCircle(res.x, res.y, 12);
+    graphics.lineStyle(2, 0xffffff, 0.5);
+    graphics.strokeCircle(res.x, res.y, 12);
   });
-
-  // Draw snake
-  snake.forEach((segment, index) => {
-    if (index === 0) {
-      graphics.fillStyle(0x00ff00, 1);
-    } else {
-      graphics.fillStyle(0x00aa00, 1);
-    }
-    graphics.fillRect(segment.x, segment.y, snakeSize - 2, snakeSize - 2);
+  
+  // Draw events
+  events.forEach(evt => {
+    graphics.fillStyle(evt.color, 0.8);
+    graphics.fillRect(evt.x - 12, evt.y - 12, 24, 24);
+    graphics.lineStyle(2, 0xffffff, 1);
+    graphics.strokeRect(evt.x - 12, evt.y - 12, 24, 24);
   });
+  
+  // Draw players
+  const p1Size = p1Boost > 0 ? 18 : 15;
+  const p2Size = p2Boost > 0 ? 18 : 15;
+  
+  graphics.fillStyle(p1.color, 1);
+  graphics.fillCircle(p1.x, p1.y, p1Size);
+  graphics.lineStyle(3, 0xffffff, 1);
+  graphics.strokeCircle(p1.x, p1.y, p1Size);
+  
+  graphics.fillStyle(p2.color, 1);
+  graphics.fillCircle(p2.x, p2.y, p2Size);
+  graphics.lineStyle(3, 0xffffff, 1);
+  graphics.strokeCircle(p2.x, p2.y, p2Size);
+  
+  // Progress bars
+  graphics.fillStyle(0x333333, 1);
+  graphics.fillRect(200, 18, 200, 20);
+  graphics.fillRect(400, 18, 200, 20);
+  
+  graphics.fillStyle(p1.color, 1);
+  graphics.fillRect(200, 18, p1Progress * 2, 20);
+  
+  graphics.fillStyle(p2.color, 1);
+  graphics.fillRect(400, 18, p2Progress * 2, 20);
+}
 
-  // Draw food
-  graphics.fillStyle(0xff0000, 1);
-  graphics.fillRect(food.x, food.y, snakeSize - 2, snakeSize - 2);
+function updateProgress() {
+  p1ScoreText.setText('P1: ' + Math.floor(p1Progress) + '%');
+  p2ScoreText.setText('P2: ' + Math.floor(p2Progress) + '%');
+}
+
+function updateStatus(msg) {
+  statusText.setText(msg);
 }
 
 function endGame(scene) {
   gameOver = true;
-  playTone(scene, 220, 0.5);
-
-  // Semi-transparent overlay
+  const winner = p1Progress > p2Progress ? 'PLAYER 1' : 
+                 p2Progress > p1Progress ? 'PLAYER 2' : 'TIE';
+  const winColor = p1Progress > p2Progress ? '#0099ff' : 
+                   p2Progress > p1Progress ? '#00ff66' : '#ffff00';
+  
+  playTone(scene, winner === 'TIE' ? 440 : 880, 0.3);
+  
   const overlay = scene.add.graphics();
-  overlay.fillStyle(0x000000, 0.7);
+  overlay.fillStyle(0x000000, 0.8);
   overlay.fillRect(0, 0, 800, 600);
-
-  // Game Over title with glow effect
-  const gameOverText = scene.add.text(400, 300, 'GAME OVER', {
-    fontSize: '64px',
-    fontFamily: 'Arial, sans-serif',
-    color: '#ff0000',
-    align: 'center',
-    stroke: '#ff6666',
+  
+  scene.add.text(400, 250, winner + ' WINS!', {
+    fontSize: winner === 'TIE' ? '48px' : '56px',
+    color: winColor,
+    fontWeight: 'bold',
+    stroke: '#000000',
     strokeThickness: 8
   }).setOrigin(0.5);
-
-  // Pulsing animation for game over text
-  scene.tweens.add({
-    targets: gameOverText,
-    scale: { from: 1, to: 1.1 },
-    alpha: { from: 1, to: 0.8 },
-    duration: 800,
-    yoyo: true,
-    repeat: -1,
-    ease: 'Sine.easeInOut'
-  });
-
-  // Score display
-  scene.add.text(400, 400, 'SCORE: ' + score, {
-    fontSize: '36px',
-    fontFamily: 'Arial, sans-serif',
-    color: '#00ffff',
-    align: 'center',
-    stroke: '#000000',
-    strokeThickness: 4
+  
+  scene.add.text(400, 330, 'P1: ' + Math.floor(p1Progress) + '%  |  P2: ' + Math.floor(p2Progress) + '%', {
+    fontSize: '32px',
+    color: '#ffffff'
   }).setOrigin(0.5);
-
-  // Restart instruction with subtle animation
-  const restartText = scene.add.text(400, 480, 'Press Button A or START to Restart', {
+  
+  const restartTxt = scene.add.text(400, 400, 'Press START to Restart', {
     fontSize: '24px',
-    fontFamily: 'Arial, sans-serif',
-    color: '#ffff00',
-    align: 'center',
-    stroke: '#000000',
-    strokeThickness: 3
+    color: '#ffff00'
   }).setOrigin(0.5);
-
-  // Blinking animation for restart text
+  
   scene.tweens.add({
-    targets: restartText,
+    targets: restartTxt,
     alpha: { from: 1, to: 0.3 },
-    duration: 600,
+    duration: 700,
     yoyo: true,
-    repeat: -1,
-    ease: 'Sine.easeInOut'
+    repeat: -1
   });
 }
 
 function restartGame(scene) {
-  snake = [
-    { x: 75, y: 60 },
-    { x: 60, y: 60 },
-    { x: 45, y: 60 }
-  ];
-  direction = { x: 1, y: 0 };
-  nextDirection = { x: 1, y: 0 };
-  score = 0;
+  timer = 30000;
+  p1Progress = 0;
+  p2Progress = 0;
+  resources = [];
+  events = [];
   gameOver = false;
-  moveDelay = 100;  // Match new faster initial speed
-  scoreText.setText('Score: 0');
-  spawnFood();
+  resourceTimer = 0;
+  eventTimer = 0;
+  p1Boost = 0;
+  p2Boost = 0;
+  
+  p1.x = 100; p1.y = 100;
+  p2.x = 700; p2.y = 500;
+  p1.inventory = { DATA: 0, COMPUTE: 0, FUNDING: 0 };
+  p2.inventory = { DATA: 0, COMPUTE: 0, FUNDING: 0 };
+  
+  updateProgress();
+  for (let i = 0; i < 5; i++) spawnResource();
+  
   scene.scene.restart();
 }
 
-function playTone(scene, frequency, duration) {
-  const audioContext = scene.sound.context;
-  const oscillator = audioContext.createOscillator();
-  const gainNode = audioContext.createGain();
+function dist(a, b) {
+  return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
+}
 
-  oscillator.connect(gainNode);
-  gainNode.connect(audioContext.destination);
-
-  oscillator.frequency.value = frequency;
-  oscillator.type = 'square';
-
-  gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-  gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
-
-  oscillator.start(audioContext.currentTime);
-  oscillator.stop(audioContext.currentTime + duration);
+function playTone(scene, freq, dur) {
+  const ctx = scene.sound.context;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  
+  osc.frequency.value = freq;
+  osc.type = 'square';
+  
+  gain.gain.setValueAtTime(0.08, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + dur);
+  
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + dur);
 }
