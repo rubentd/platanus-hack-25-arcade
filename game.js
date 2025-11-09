@@ -1395,7 +1395,7 @@ function endGame(scene) {
       color: '#ffffff'
     }).setOrigin(0.5).setDepth(1000);
     
-    const restartTxt = addText(scene, 400, 410, 'Presiona START para reiniciar la partida', {
+    const restartTxt = addText(scene, 400, 410, 'Presiona START para empezar de nuevo', {
     fontSize: '24px',
     color: '#ffff00'
     }).setOrigin(0.5).setDepth(1000);
