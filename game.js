@@ -41,6 +41,8 @@ const CHARACTER_SPRITE = {
 }
 
 const BUG_ICON = toData('iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAHD0lEQVR4AeyaT2jcRRTHZ5tqsomU0krRaqAtYgW12EaspF7ECFKNgiAFqQfRa0G8CepBBC_iRY+KB3sRih5qi2BLqdhgCxapijQejAQbkDYNpbqJcVnzmc1LHrPz+ze_+bULWfG7M_PemzfvfefvbrrOrPH_egSs8QVgeiugtwLWOAM3ZAs0R3e34Pmpu3baknoSxKZ54ECmbZKPIvLKCSChxl9z5vHbt7W+_vNiLSs4bLBt_HDO0DfLvqy+cgK+fHinGZ9rmVOXp2p5g8WWPnfO_ZO3S7BdpQQwg7NTl4OD29rqsysn2EGOjpUSwPh33DdM0bWolAD286tfTZgTT+ztmEkOxuv3bG8B98DjDNjWaJqJQVNo64SwXCkBBPTp39M1TQLJ2YSH7zX1kUcssIMItgz60eWtz1mArkpEJ4Ak3ICn6n1m7ORZK2Y11A5_ZoAVLH9Axgu1dubMPH2WVSuFz_eKMrASlQBm79hjD3WEIjN5dGPyRXB84ozZUlu9+qWPdoZvxtCysvWoBBzft2tlpnVgzBwzzywjbx18yQDuekDyyAXsf1+iT3_3o3mgnkyi9E8rXV1UAlzn0l5YWGhXpycNCQOSPrWwaEBbacwHjfWG_c_1J7Kqy6gE7D9zwbDMmXE3cM6Ascmr9lE0vvQwIlkX9GH_A+oarIiRqwvm58bqNtH60HpUAti3JMdhRsAExXV3cmbSJIFtw_bQgET6ig8IZVtADGOgi4XCBBBM2uAEeHi+z5pwtdVOn7V19rwPJ86fN2wHDTp8csu83Q4vDw232ELcCvhGl4Ss2Hz9ChHAAATjc6RlBNrf328Gf71oxSRuK56P_aP7OqScC1uG6uaNrTXz_Kb2ksdnh6EjIDZZNY4qsbkuUeNRMIBH7BVxZZE4EAPufiDttBIS0vSxdIUIYFD2ahbLvPTcRN02vrLQd_+D1uTgQLPjKW0V6oOYiE2JclULEcCyfvtoe08neW8892yLZN2Z1_bodTupzvkwtmePeXFkt8lDQlZsvnEKEYCDN5_cReEFM99_5Ih95HgNloWanGWRtyB5FM1ffqKwh+Kh4e3tQ8FKyn8UJoC7nquryNA6YV3HB6c_pQ+sAOSfz_9HkQq5JlONPMpCBPD1Fh+3DtTtnuRWoJ0HJA607b_zDd301iGB7whsg2ubO5_B7H0gr8c8t4UeqBAB0pFXHQcOJz2DC9Af27GDIhWSOMmlGiolthuutFe_jEdJHOBSrams81cLEwDDchhy6PB2d4cjQaDltAUkk7b0dT9d5yWo24xNDCDPQ0n3lXphAujIViAYATINEtRtEpe2qxN5SCnjUzIxIT6CCGAgBtRApiGJ6uS1vmxdj0091F8wAUkD8g1PdLLMIUMgOkptS7sKZPmMSgCHozsgibsy3S5KQld+HeY0JikOJco8SWkbXae_D2IjvwjJmD7bIrJSK4AggAz4zvhe+1qjLQFTd4GOhwuEvV5vP3KQuXbS9ukggrGB2IWUwQQwMC9CEtED8xVW2gQOvr+y3ghoo+dr7qOb28lrEtC7wN4FW4Gx+fGEWFx93nYQAQxI8u9+c8G49++hmXZSOgCuKQFySZi6wCcTna_k5J_ZOGjeu9QyH909ZF+mPrssWRAB4pSkCETaf3x72nz8zKg0vWVaomk6cXZ9dpVgeY+ILqQMIoCXoDsYRLyyOGDF7E9bWfogKY0lUer_nAtJBvjlzc9YSTZF5UEE8MsQyz9rMBLPstF69j6rSsvcuk___m_XXLPc7SACWAEE4s4E8tcmzq0MTkIrjYwKtlmz73NBDJxDPl0eWRABSY7Zk5zOWk9iuq3r3AzoAfKJpb8GUyYB3yTs6iEeuPI87SACSDTLOftVbEhQkqX8YrZmQFbC0l_7Eplb5onJ7UM7iAA6poGZcvWSLCVLFrg2aW2fzzT7vLpgAnxLkfeB7GMCzjNzaYHSH+ALO3zzhxLqGqGzj49gAuisQfL8MsMMIxeCSIB2UfDK484nefGFb65BxirqL8k+GgEyACRI_cPp32skAAlA5FkltrdtWt_xymQFZPUtqo9OgPuVmNljJgmMxCjTIDYQR980W5+uqCw6AXoFSDD8OyESok2CgLqAtgAZtr7k+bYJsImF6ATwD6J8wZEQiQkkYUrsRU6JLTIfkvz7bPPIohFA0Cz_tzYs2t8EfAcVNgIS1RA5pRs4vtj_ZX79dX1KOxoBOOQ1xhciTmtO8bQ_nJCoBv19IHmR41fqscqoBMh9zGxxXUm7TLCQhD_xQVvqMcqoBBAQq4CZArRjAF8ghi_XR3QCmHVmCSLcwcq08QnK+PD1jU6ADAIRaWeA2GWV+KgicRm3MgIYABIoyyCGj7TxKyUgbeBu0fUI6JaZuFlx9FbAzWK+W8btrYBumYnQOMr2+x8AAP__SjqybAAAAAZJREFUAwDAOpWu1IsVngAAAABJRU5ErkJggg==')
+const SCANDAL_ICON = toData('iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAFdUlEQVR4AeyaT48UVRTFi1noxrAixkCH6CQGcaGu3CioMMgCP4EsDIkrk_kE6krdaOJK3I4uNK6NxKCI_+KMO4GFhJgUiRmJElbExIUJTf86nOH0m1fd9eomMwXTJId777n31Xt17quq7ulaqHb4v7kAO3wDVPMdMN8BO1yB+SWwwzdA7CZ4_Z+_h31Cl2YWXwLnzp4dvv3Wm8PBYO+wy4R9G1MkwIcfvD_87IvPq5VPVqr19Wu9Ope6vtppPUUCPLJ3X3Xlyh_V_v2Pjie7dOFixcT9QD1eU+l_rQX4dW1tePny7xPHv37jxkiAuheYWFhB0FqAM2e+qr47_3114MDjG4dHkL7g23PfbKyrxGktAAf1kycGiNIHcGmynlK0FuCdd9_bdWzp5U3HP3rkpaoPWF1d3bVpcRkipVoLoIGDfQO594UtEuDVkycnVF5eXq5OnHhl2xHpRJEATHTw4JPjG+GpU68RZp8AJOr67tNB8X_Hnq_Ov_jcVFDDWI3BF5o4+K4oFiCd6OE9e6rFxcUJUOMcMXXYN24tVNNADWNl8YUmDr4rigXgMvD7wFPPPL1pF7CYtGt8ZoBvA8ZSh3U0cfBdUSwAE3EZYIWlpaONO4AaOsgOWPt_9tcHaqjXOHyhiYPvik4CpLugzeQP7d7dpmzLazoJ4Kus73wJ+ffmzYlLgZraboT4cG1ArYMxTTG5CDoL8MKhw+N5FxcfG1vuBdqqWEiswCUA1wYaI8sY+ViP8SPoLMDS8ePjzwT1aAcILARB0t1AfF_dBDlRgRN2wGs30HUAJ4s_C2mXiQHjsA64CDrvAE3q3XefvG58dB_AtUE9unewa7Cz0OZ402rCAqj7TJLzfTc8++XX1W8PNj8KyVFDhxEPOwvMG0FYgNruAe6zKMX4nBBi4E8DO6Vu2AGMI+eAiyAsgLqeWhaV4_igQy4Hcuo4gsmXZYx8WbgIwgLUyQ5gMSnnMflpQDTy2Db3AWqob8IsPiwAC3UwocepT34WGEMNlwwfswV1HctTBVAXQViAtLse47M4rEA8DapzSz0xVuASAYgkrosNC0C3BBYgXzbliKdB49xS77H75PjDDLYLwgLQGcDkWCGNxfOY43FH3gFHDk61qc3l4CIIC6BusAj52DSGA9O2rHLU5ZA7JlwEYQHSLuViFug8jzs4B5zXtPX9GF38sAC5TqUcC3OOOAevaevnjlPChQXIdYoFpLxzr_95rfp44dYEjvzwy+jvCVc34PXpsTymLoKwALlOsaCUdw4fERzT6tOcxxwrgrAA3g33WZTH7jflcvwsjjzgvQVsKcICeDfcZyEeu9+Uy_GzOPKAL1HYUoQF8M7iswCsI8c9MBhUDq9P_dx41ZADH50+jSlGWADvLD4rwDpS7onDh6AmAOdj3KfQY_fJCV0ug7AA3gn5WBaFdcDRdWwO5Lw+9RmT4+DBjz__hClCWAB1g1nlY9NYHPw0UNcExqU5OEfpLggLkOuIcyzOY57_cDmQUy15+bJNHLxQugvCAuQ64hwL85hnPycK74Ajp1py8mWbOHiw_tc6pghhAdQdt6zAY_nwly5crPjUxwk7OHnVYanFzgJ1Aq_J8LpOyWUQFkDdccuCPJYPzzc+Yk7YQQ5eSGPxqaXOkXuPyfOpHxYgPeB2xX7i3Afa7oKwAGxRThoL3G8TpzXp+DRPDFSHBWx_t_htEBaALclEWOB+mzitSceneWKgOqygXVByMwwJQCf6Ap28xNCPt4qbbFCAuy9C1aNfc7YLvMWqS4D3BVdWPh3_ct100s6HBOjLa7KcUOmJMwaEBODt0b6Ak+mCkABdJuzbmLkAfevIVq9nvgO2WvG+zXfP74CooLcBAAD__24cXBEAAAAGSURBVAMAVkdb+bD_bnIAAAAASUVORK5CYII=')
+const LEAK_ICON = toData('iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAADA0lEQVR4AeyUv4rUUBTGR59BbRQEX8NGOzsrO19FG5_B0s5CrLSz08ZyQbBwK2FBQdx9gi12l9_At4QwN7mT8+fesDPwzUluknPP9zsnub254b8DgBs+AJumE_Do1fvLF0fnly2b0BRAS+Pa+wBAJLIj4__w8ZPttk+__Gn2GjSdgDt3720BtPxrAmDYfcwDotUUNAEg08TWSgcw7r4AtJqCdAAYxiyxB6UCKHVfIACT_S1IBYBRTBJ7URqAue4LCIAypyANAAYxR2yp8d4pAGq7r+IAlTUFKQAwhilibwoHsG_3BQhgGVMQDgBDmCH2qFAAS7svUICLnoJQABjBBLFXhQGwdl_AABg5BSEAZJ7iZcQSyRMFIQQAZima2LvcAaj73sYBGjEF7gAwTrHENcgVQFT3BRKw3lPgCoBCKZK4FrkBiO6+gALYcwrcAFAgxRHXJBcAWd0XWEDXToGeKUUXACSnKOLaZAaQ3X0BBrjHFJgBUBDFENcoE4BW3RdowFunwASAQiiCuFaZAazVuOo+ABCJfWPN+__8fjxfXkHLd8BUIZvvC663+00AejOzpJ5wABmvwRLjeiYcgDbqNaYAYAqk3kCEAcBwb2Z31WMCcPTp466ck2veYM5O_0_uN3dxMYDfb17emkr++e9F8bIXBOX5+uzBdS3FTQsXFgMo5EtblnnrhmYAJ8e_rDVsn8cQ2p7M_Om+dz_+zdw5f9kEgNfg7PhncZe51wAjkpJwruOaaBl_8psAkAAt+RjyXK2AMhTPeXSfPGYATAGJSmIKUOn6rvWx2V33sGbtPjnMAEiCoqYAGOQfyqv75HQBoCmYgsAUIDa1SOY9uk8dLgBIVAOB+yzyNk8tbgBIFgkhwjw1uwIg4RDC1CvBvTXCOGLkUc0z+9zjDoDNgYA4BgLiGNV+BzCNeCbCOHlRCAASIyAgjoEgvX77YSNzXEOcD8UaxhHHUQoFoKKBMBTrJ9+_bQQC46xhdijWopUCYGxiCCPb8LiWJgDGRbQ8Xz0AK7wrAAAA__+EvNZVAAAABklEQVQDACgcEZBlDgb_AAAAAElFTkSuQmCC')
 const COFFEE_ICON = toData('iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAADlklEQVR4AeyXz0tUURTHzwRtpEQzyxIMNSFXli0isUU_Ny2jP6B_w1WbgnZCmza5kWgRCRJBYOZCG6PIXwgaqemQOmkW_WAgCorPkxOvx+S8N855DjNX+My79865953v9577nrNLyvzPGVDmBSCuAlwFlLkD7giUeQG4h6A7Au4IlLkD7giUeQG4t0DZHYFgxcdmwJ1bt39HIZioVd_cABXtFzCcTEouss3zr1GotqkBiPAnml5NC7Q0Nomf+oN1Xph_bGF+wRsLruENFvDD1ADNE9Ggfa6ZTEYU+vD23aZo2nFhagBljpC6Q5s7TFupqKgQ0D5VAJjCWMfpTqk7cJimKWYGaOluZcL_lB1va_e+So6OCEdB1_IGC_xhYkAwYUwAKiFIU3OTKBcvXRaYmBwToEIAzcE1GSsEJgYgNltyjPvhuQDsMvHz8zMCtIMQFxwrRN_EABJDKGea9nagYqzEk5eZASy+_CEtmMDrjX42eOhpmev3iAb6luJZ38SAe_33EywOmMDrDSP8nOnoEERy_rnyxIfzF85Jc3Or9_8C8zGI6_XuG3_XpF8oTAwgOUzoXE3S9MAIP5x7P+m1FYHBp8_k+ciQNwfxjRN9YiWem5gZwOKACUA7Ci3Tj6VtYUjOnjoaZVrkWHMDNCNM8MPOKgjdO3BXFMSfbK0R0PlWV1MDBn7u3jLvyspqAYQG0YmjiSptmlxNDajaVymYAFGzRzjU1u6POvWf+FwdUwO4OSYAJiiMZwPBCsIhW1whx8wN0GQxQVEjHm58F+gaWRKEI_j9+mfhqvOsr7EZ4BeiRpw41iBKnKL9ueyIAf4EdrptakDP4FhipwXmur+pAbluHub7nr7BMGF5xxS9AX3jc6ZVVPQG5L21IScWtQHr6x9Dysg_zNyA6dk5gagpcvYfDU9GnRY53tyAl8tfE9fqqz0TchnBjo_PpgTxDZlfYn3+ccvcAG4CmACYoCBWQTQ7frPziMDVdtufweQEsRjALz5uBpigXKnZI4BghZg4icWA3qlUJE2vZzbkwdhcpDn5BsdiwJO1T4n+xW8CWyXa92JFYOnLD+l+s2j6_tc8YjGAm2ECYILSO5WS3qmUJxrhxHW9mkkA7XyIOic2AzQxTAiCYEXj4rrGbkBcwsLexxkQ1qlSjXMVUKo7G1aXq4CwTpVqnKuAUt3ZsLpcBYR1qlTjXAWU6s6G1eUqIKxTxRq33bz+AAAA__8Ptn4QAAAABklEQVQDAH6+u5AFfIvsAAAAAElFTkSuQmCC')
 const FUNDING_ICON = toData('iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAEgklEQVR4AezYv6sdRRjG8Y12QaLcStQiEARTWFoIgo0ELAOCnY11LKy1srdQ2_wDNgEbQStBsLAKSUhICEmRhFSXJMWFQMJNPgtvGIad3Z3dc+49YTfwvfPOO+_8eJ6Zc26SN5qF_1kNWPgDaNYXsL6AhTuwfgQW_gDWL8H1I7B+BBbuwPoR2MUH8POlHw9TtnnGnXoBIZrgTz8_3UCc5vU3yU4YkAokGiFSDP20Tn8K+ZxjNSAVRCTyA0Y_HTMv8nPbYzHgzh9fHcLhCYN4CHVQxwSI53CkBhCN98983OD8m9ebd__9s_nvn7udlIQxAcbnmnAkBhANouHgEIMRkEsJY9JcGjMBP1y80P7WSMfGxls1wO1c_v3rQyJROlSMdZlQmpPm9_beabv2a4OKH1sxwEHgHAdfnGvu377yCrkumAAmoKsmz6Uv5O69B83VazfyksH+Rg0gGnb1NCF++NmXzaXnZ4WtEW1Q+MEEQ0xArCEXpML39x81xBt76+1Tmio2YgDRsLMDQ4z0sExAvAjjXTABxuJLUpyuRTSeHBwYmswsA4iG3YmGOHDgiNOWCfqM0JZgAryEWItolObU5icZQDRsRjTENTABJRPkg6ePHrfPvE_46Q_ea365cPFEzRnUVhsQwk2eIty8lDCBWHktxE9fCoe4BOEw_t2v3x5qa6g2wC3AJp4lxF0MGWQc8SX5281n7TJEo+0UfhANw84DcS3VBsQGNvQNrM8EiHMILKHWPIitWSPc_uaYO5XJBtjQN7ADOIh+CBEPoRbqrAFxH_mN27+vfszYLANiAwchgBFEIcby1hjk1Zsn7uP_vXPN2Q_PNGPr+9bKx6oN8E176uTJfJ2232cE0VBINNTrD_HJ_l_N9Vu3m6F6Z8vXGupXG+Cb1t+9PUd0beCgBLoxoqFOX168KZwhcLbadasNsAERENt86EWoI54x4i6sg66xrpxaGHMWiGuZZEBsYlPC4kVEvqstiScC5lhP24daqLH3mDlqS8wywKKExSEcDPJDqIM68yHuI6+3d1_9mLFqA+IQ+eIEQF4NxDnykB97gzv1W+D78z+dIKD0uWcCCFSnDaJvHGNvcMxvAb8BEHuNbatfQHzTDn3uCXTDIVqrLz_2cGPqiMaY2q6aagMsQgTEhJVegxuOOq2+OV1YB55713ieIxp5vrY_yYDYhCi3OvQaor6rJRrGrOe5i0sQjdJ4bX6WATZzqw7OCEIgP4Q6qDMf4hJEozQ+NT_bgNg4jNAnDOIcecgzbUi4uo+++bv6PzrMG0O1AW4BpcUJgvEQKkb0jYNp8iUIR2l8E_lqA2JTJiD6eUugGw7RWn35vDbvE408v43+ZAPiMH0muOEQrNWPeXlrHRyV8Nh_tgEWcnCIazEPtfM2Vb8RA+IwhCD6fa069NVMGauds1EDYnPCEP20lUeaO854KwaEoFSoGDG2K+1WDSCSaP+AEu8iWzdgF0WnZ1oNSN1YYry+gCXeeqp5fQGpG0uM1xewxFtPNa8vIHVjifH6Al73W597_hcAAAD__2Xv1_EAAAAGSURBVAMAFjHsn3TC3r8AAAAASUVORK5CYII=')
 const COMPUTE_ICON = toData('iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAH9UlEQVR4AezYza+eQxgG8KnFKTb8AYSgGiQkCM5CGhaISCSiSKo0WKASSioRia2E+Ep8bJBGdUFFaCiJkJTKsUCoIPT1pg1bohvVszme35NzP5mO5_067fl429P0OjNzzz0z93XdM_PMOSek4_zfsgDH+QZIyztgeQccAwqctPLkmbnSGOsjgPiKFStmTjv9tLnyH887AHE46+yz0vnnXZAmJiaS9lxUOGEugxZrDJIyjjjkcWjrz23D1MdCAMSCuIz3Ivbv9MFeXT3tS1oAxEF2+xEPdidOnBTVocslKQDSgDhMTk6mSy6+uEEvdnyN69XfZl9SAggeEFl3+7qEOExNTaVvvv22ATHY2wiNalsSAiANiK9de3Od6ddefzXt2rWrxk8__5hyEIMohICctDnMldv61RdVAIGCoEFWkdu6bWsdc+e3vfUnru38E4Qf_1KEevCQPxZFAKTjVkdcrMhve3NbnWntAKJRbyv1E8H4tv7SVrYXVADEAWlZffDBh+p4BG9Lh11f3ZH9CJsyz7j29PR0mj50qPE2j3UaQ5_KggggGBDYezt2pGefez4F+YhNJgNsiCnbMPXVV4eZHRXHgZCHdQzRmFcBkIac+MObHkogthdeeL6+6WVfO0AIWW0TgR1hvm397GBNa6v3w7wIYGEQBGzYsKEmHcS1Dxz4u4kL4aYxW0GSPSd5ztmrEjsXdWLw0QZC5rtgmJfhURUAaUAaBAWnnHJqveVte9DesmVLnX2fOj4IBYK0EqHAmjVrEh_+fgEKMbT55mKwDfMyPCoCIA1Ig4BdVEqw1UsIMIAUMhA2hIzVXnvLrQnUiaCvJKuvhFjEVdrz9hEJYPL4nLW93GxJQATyhfN6Tlw9JxfEH9h4fyNCjJVhYkDYRi3nJADiQOH169YPfLkRAYgAg4JEKBdh+9tvpRdfejl9+ukn9VB9do0_hLgHgE1n_jnUFqNY1dswkgAmioybGBmPEJ8gk8ues4mAdg4Bxnl3PPK+qBsHfBFk37b1jbR69eq05_vv0l9__sVUw1o5GI2ZWLlSdWgMJQDigLQAzY48QoLVDpTtsCsF7I0vSOPrXXHFFSm2Mp8Yz1c_2w979iSQXTZE2Uu4H_SXdnGLv7Rr9xXAoDzjBkAEL0jBAHuOEOr6665PZ55xRtPFlwiNIasEeSZ+Srsrdpk6W+yyWCNKfaOipwDIU66cHHmLRLBEEFAErK_Er3v3Nia+GkRwFJDzG2DMp89c_EqbPjZnHrT5sinbss+n+1tX0YqeAvR7RJQLCaBT_ebmQixX2bd_f_N4KcV0FMIfgagrQ2h1ZAmiDtaCWNdY219fDv3divzBQ_+sgLwv6j0FCIe20sSlHTlbVBl9AgtfdkSizYeQsQtKAu4XPtCpxDVWvYR5J6t7xFzRZw2YmZnpSTx8DxPAtg9wMIkyICsRmIVz8EWYTwApPjEekaizG5Pvgrvvuqf+M3fuF_5s5jcubOrWcozYzNetMo44sA1CIwDiHjMBwfQabGGLBfixIazu8QLqAtTHVxu0lTkig_wR7VRZz_vV2WIel6vdIyFsgHS51Y3rh0YATj4zLifQFqiJ1XOUtrwdxH2_o26suQK2cz5GPxABCCkBEGPy0l3jbtm+_Z30x+9_JMTBHKOiEcCl5wybyHdZILIxzISCywl5ua1bf0dSGq8vh0yy57BWwNoBWQ670hhxmk+2gW2uaARAHExk0m51luwI7UDZRhwEY9vyQ_qyyy5P+_ft06zBB+rG7A_+MoxoEJvtqn9LRFzb+eYD_mQmLnGC_iNFI0CviQSKoH7BKIE938qd6swKkki7v_g8Ab84o3yNCfDXX8IckK9l_W6VEImBcsyRtAcKUE7uk8Pmu9ypSKtDZNj2FLwy7hL9fHOwESvPPuLsAcRBto828VijpwDuBERcSOEcpSwKLNpRynLU+agTavPmR1UPg4vM_ERAHMLB3PD4bVfWvyeEfT7KngJQvVttO4vKroDUBV2KgqxMdmZ3RC6EcR9+8GH9fTePOZTx_TcfG3Sr9fgj_tx9V6dn3v06zVfmrQc9BdDZD0hHvyw769HuzAoRbaQCxhGrLePfv785IY_4Y69NzTt58Q0UIA_UAGCzC2QSkDt31SpdDYiirzFUFW3jjK+aqZtl_JePnmBqsj7fma8Xq370FUAQyPkkyZx6Nab+j4RMgr6dH++s7fGDL2gj7sybx05hh0duujQhfsedV6WdO3ani258mvuCoq8AIvEoUsqoMgcRwJcBQUC2BOLOupdbpzoetnkQ3_3lLzXx2PJEz9eY7_pAASKA_GILW5TIBZAN2B18fBJlfMM1F_4v4xuf2lGf9YUmLi4YWgBnV2YRMbAXQgildwD_e2+4vCa+aeO1abEzXsY9UIB4D5QD+7WRBlvdEUI8zvhiZ7yMe6AA5YB+u6Bb3ergDYG4y+3JuycX9YyX8ZftkQSIM11OIttQnmO3+kJfbmVsg9oDBZBN5MqJ2CAyzo9PiKAMsC9VDBRA4LazEtzwSk9VUB9nDCVATjDe8Jte+SzF9s77x60+tAAePDk5W94Wz23jWB9KgCDqGYtkfiS0xxlDCYCgy65TPWPtBH859ldk9nHH0ALYBba9m98fMcadeMQ_tAAxQOltrzwWMLIAzr+dcCyQx2FkARwFA6NUH2eMLMA4k22LfVmANlWOJ9vyDjiest3Gdex3QBupUWz_AQAA___zmJrWAAAABklEQVQDAEL0KczjJjGkAAAAAElFTkSuQmCC')
@@ -96,11 +98,12 @@ const COFFEE_MAX_ON_FIELD = 2;
 const COFFEE_COLOR = 0x8b4513;
 const COFFEE_FOAM_COLOR = 0xf5f5f5;
 const BUG_SPEED = 1;
+const HOP_HEIGHT = 14;
 
 const EVENTS = [
-  { name: 'BUG', color: 0xff0000, penalty: 10, icon: 'X' },
-  { name: 'SCANDAL', color: 0xff00ff, penalty: 15, icon: '!' },
-  { name: 'LEAK', color: 0xff6600, penalty: 12, icon: '?' }
+  { name: 'BUG', color: 0xff0000, penalty: 10, icon: 'bugIcon' },
+  { name: 'SCANDAL', color: 0xff00ff, penalty: 15, icon: 'scandalIcon' },
+  { name: 'LEAK', color: 0xff6600, penalty: 12, icon: 'leakIcon' }
 ];
 
 // Game state
@@ -113,6 +116,8 @@ let p1Boost = 0, p2Boost = 0;
 let currentRound = 1, p1RoundWins = 0, p2RoundWins = 0;
 let pendingRoundTimer = null;
 let nextRoundText = null;
+let musicGain = null;
+let musicTimer = null;
 
 function preload() {
   this.load.image('fundingIcon', FUNDING_ICON);
@@ -123,6 +128,8 @@ function preload() {
   this.load.image('char_south', CHARACTER_SPRITE.south);
   this.load.image('char_west', CHARACTER_SPRITE.west);
   this.load.image('bugIcon', BUG_ICON);
+  this.load.image('scandalIcon', SCANDAL_ICON)
+  this.load.image('leakIcon', LEAK_ICON)
   this.load.image('coffeeIcon', COFFEE_ICON);
 }
 
@@ -139,11 +146,11 @@ function create() {
     facing: 'south'
   };
   p1.sprite = this.add.image(p1.x, p1.y, 'char_south').setDepth(10);
-  p1.sprite.setDisplaySize(128, 128);
+  p1.sprite.setDisplaySize(98, 98);
   p1.sprite.setOrigin(0.5, 1);
   p1.sprite.setTint(p1.color);
   p1.runCycle = 0;
-  p1.running = false;
+  p1.bobOffset = 0;
   p1.currentTexture = 'char_south';
   
   // Player 2 (Green startup - bottom right)
@@ -156,11 +163,10 @@ function create() {
     facing: 'north'
   };
   p2.sprite = this.add.image(p2.x, p2.y, 'char_north').setDepth(10);
-  p2.sprite.setDisplaySize(128, 128);
   p2.sprite.setOrigin(0.5, 1);
   p2.sprite.setTint(p2.color);
   p2.runCycle = 0;
-  p2.running = false;
+  p2.bobOffset = 0;
   p2.currentTexture = 'char_north';
   
   // UI
@@ -170,27 +176,26 @@ function create() {
   
   p2ScoreText = this.add.text(720, 15, '', { 
     fontSize: '20px', color: '#00ff66', fontWeight: 'bold'
-  }).setOrigin(1, 0);
-  updateProgress();
+  }).setOrigin(1, 0)
   
-  roundText = this.add.text(400, 80, 'Ronda ' + currentRound + ' de ' + MAX_ROUNDS, {
+  roundText = this.add.text(400, 40, 'Ronda ' + currentRound + ' de ' + MAX_ROUNDS, {
     fontSize: '16px', color: '#bbbbbb'
   }).setOrigin(0.5, 0);
   
-  statusText = this.add.text(400, 580, 'Ronda ' + currentRound + ': La primera en llegar a 100% AGI gana!', {
+  statusText = this.add.text(400, 580, 'Ronda ' + currentRound + ': Logra desarrollar AGI antes que la compañía rival', {
     fontSize: '14px', color: '#888888'
   }).setOrigin(0.5, 1);
   
-  p1BoostText = this.add.text(20, 600, '', {
+  p1BoostText = this.add.text(20, 580, '', {
     fontSize: '16px', color: '#ffdd55', fontStyle: 'bold'
   }).setOrigin(0, 1).setVisible(false);
   
-  p2BoostText = this.add.text(780, 600, '', {
+  p2BoostText = this.add.text(780, 580, '', {
     fontSize: '16px', color: '#ffdd55', fontStyle: 'bold'
   }).setOrigin(1, 1).setVisible(false);
   
   // Instructions
-  this.add.text(400, 50, 'Recoge los recursos y llévalos a tu HQ', {
+  this.add.text(400, 10, 'Recoge los recursos y llévalos a tu HQ', {
     fontSize: '20px', color: '#666666'
   }).setOrigin(0.5, 0);
   
@@ -206,12 +211,13 @@ function create() {
     if (gameOver && (key === 'START1' || key === 'START2')) {
       restartGame(this, true);
     }
-  });
+  })
   
-  // Spawn initial resources
-  for (let i = 0; i < 5; i++) spawnResource(this);
+  // Resources will spawn automatically once the round starts
+  resourceTimer = 0;
   
-  playTone(this, 440, 0.1);
+  startBackgroundMusic(this);
+  playTone(this, 440, 0.1)
 }
 
 function update(time, delta) {
@@ -268,7 +274,14 @@ function update(time, delta) {
   
   // Move hazards
   events.forEach(evt => {
-    if (typeof evt.vx !== 'number' || typeof evt.vy !== 'number') {
+    if (!evt.mobile) {
+      evt.vx = 0;
+      evt.vy = 0;
+      evt.facing = 0;
+      return;
+    }
+
+    if (typeof evt.vx !== 'number' || typeof evt.vy !== 'number' || (evt.vx === 0 && evt.vy === 0)) {
       const angle = Math.random() * Math.PI * 2;
       evt.vx = Math.cos(angle) * BUG_SPEED;
       evt.vy = Math.sin(angle) * BUG_SPEED;
@@ -310,7 +323,6 @@ function update(time, delta) {
       events.splice(i, 1);
       playTone(this, 220, 0.15);
       updateStatus('Jugador 1 choco con ' + (evt.label || evt.name) + '! -' + evt.penalty + '%');
-      updateProgress();
       continue;
     }
     if (pointInPlayerBounds(p2, evt.x, evt.y)) {
@@ -319,7 +331,6 @@ function update(time, delta) {
       events.splice(i, 1);
       playTone(this, 220, 0.15);
       updateStatus('Jugador 2 choco con ' + (evt.label || evt.name) + '! -' + evt.penalty + '%');
-      updateProgress();
     }
   }
   
@@ -368,7 +379,7 @@ function update(time, delta) {
     p1Boost = Math.max(0, p1Boost - delta);
     if (p1BoostText) {
       p1BoostText.setVisible(true);
-      p1BoostText.setText('Cafeina: ' + Math.ceil(p1Boost / 1000) + 's');
+      p1BoostText.setText('Cafeína: ' + Math.ceil(p1Boost / 1000) + 's');
     }
   } else if (p1BoostText) {
     p1Boost = 0;
@@ -379,7 +390,7 @@ function update(time, delta) {
     p2Boost = Math.max(0, p2Boost - delta);
     if (p2BoostText) {
       p2BoostText.setVisible(true);
-      p2BoostText.setText('Cafeina: ' + Math.ceil(p2Boost / 1000) + 's');
+      p2BoostText.setText('Cafeína: ' + Math.ceil(p2Boost / 1000) + 's');
     }
   } else if (p2BoostText) {
     p2Boost = 0;
@@ -412,7 +423,6 @@ function depositResources(player, playerNum, scene) {
       } else {
         p2Progress = Math.min(100, p2Progress + total);
       }
-      updateProgress();
       playTone(scene, 1200, 0.12);
       updateStatus('Jugador ' + playerNum + ' deposito +' + total + '%');
       
@@ -477,20 +487,34 @@ function spawnEvent(scene) {
 
   const x = 100 + Math.random() * 600;
   const y = 100 + Math.random() * 440;
-  const angle = Math.random() * Math.PI * 2;
-  const vx = Math.cos(angle) * BUG_SPEED;
-  const vy = Math.sin(angle) * BUG_SPEED;
-  const sprite = scene.add.image(x, y, 'bugIcon').setDisplaySize(40, 40).setDepth(7);
-  if (sprite.setTint) {
-    sprite.setTint(evt.color);
+
+  let vx = 0;
+  let vy = 0;
+  let mobile = false;
+  let sprite;
+  let facing = 0;
+
+  if (evt.name === 'BUG') {
+    const angle = Math.random() * Math.PI * 2;
+    vx = Math.cos(angle) * BUG_SPEED;
+    vy = Math.sin(angle) * BUG_SPEED;
+    mobile = true;
+    facing = Math.atan2(vy, vx);
+    sprite = scene.add.image(x, y, 'bugIcon').setDisplaySize(40, 40);
+  } else {
+    sprite = scene.add.image(x, y, evt.icon).setDisplaySize(40, 40).setOrigin(0.5, 0.5);
   }
+
+  sprite.setDepth(7);
+
   events.push({
     x,
     y,
     vx,
     vy,
+    mobile,
     sprite,
-    facing: Math.atan2(vy, vx),
+    facing,
     label: EVENT_LABELS[evt.name] || evt.name,
     ...evt
   });
@@ -504,11 +528,13 @@ function draw() {
   graphics.fillRect(p1.base.x, p1.base.y, p1.base.w, p1.base.h);
   graphics.lineStyle(3, p1.color, 1);
   graphics.strokeRect(p1.base.x, p1.base.y, p1.base.w, p1.base.h);
+  drawRoundWins(p1.base, p1RoundWins, p1.color);
   
   graphics.fillStyle(p2.color, 0.3);
   graphics.fillRect(p2.base.x, p2.base.y, p2.base.w, p2.base.h);
   graphics.lineStyle(3, p2.color, 1);
   graphics.strokeRect(p2.base.x, p2.base.y, p2.base.w, p2.base.h);
+  drawRoundWins(p2.base, p2RoundWins, p2.color);
   
   // Draw resources
   resources.forEach(res => {
@@ -534,8 +560,10 @@ function draw() {
   events.forEach(evt => {
     if (evt.sprite) {
       evt.sprite.setPosition(evt.x, evt.y).setVisible(true);
-      if (typeof evt.facing === 'number') {
+      if (evt.mobile && typeof evt.facing === 'number') {
         evt.sprite.setRotation(Phaser.Math.Angle.Wrap(evt.facing + Math.PI / 2));
+      } else {
+        evt.sprite.setRotation(0);
       }
     } else {
       graphics.fillStyle(evt.color, 0.8);
@@ -547,44 +575,145 @@ function draw() {
   
   // Draw players via sprites
   if (p1.sprite) {
-    p1.sprite.setPosition(p1.x, p1.y);
-    p1.sprite.setDepth(p1Boost > 0 ? 12 : 10);
+    p1.sprite.setPosition(p1.x, p1.y)
+      .setDepth(p1Boost > 0 ? 12 : 10)
   }
   if (p2.sprite) {
-    p2.sprite.setPosition(p2.x, p2.y);
-    p2.sprite.setDepth(p2Boost > 0 ? 12 : 10);
+    p2.sprite.setPosition(p2.x, p2.y)
+      .setDepth(p2Boost > 0 ? 12 : 10)
   }
   
   // Progress bars
   // Progress bars
   const barWidth = 20;
-  const barHeight = 400;
-  const barTop = 100;
+  const barHeight = 600;
+  const barTop = 0;
 
   graphics.fillStyle(0x333333, 1);
-  graphics.fillRect(10, barTop, barWidth, barHeight);
-  graphics.fillRect(770, barTop, barWidth, barHeight);
+  graphics.fillRect(0, barTop, barWidth, barHeight);
+  graphics.fillRect(780, barTop, barWidth, barHeight);
 
   graphics.fillStyle(p1.color, 1);
   const p1Fill = (p1Progress / 100) * barHeight;
-  graphics.fillRect(10, barTop + barHeight - p1Fill, barWidth, p1Fill);
+  graphics.fillRect(0, barTop + barHeight - p1Fill, barWidth, p1Fill);
 
   graphics.fillStyle(p2.color, 1);
   const p2Fill = (p2Progress / 100) * barHeight;
-  graphics.fillRect(770, barTop + barHeight - p2Fill, barWidth, p2Fill);
+  graphics.fillRect(780, barTop + barHeight - p2Fill, barWidth, p2Fill);
 }
 
-function updateProgress() {
-  if (p1ScoreText) {
-    p1ScoreText.setText('Jugador 1: ' + Math.floor(p1Progress) + '% | Victorias: ' + p1RoundWins);
-  }
-  if (p2ScoreText) {
-    p2ScoreText.setText('Jugador 2: ' + Math.floor(p2Progress) + '% | Victorias: ' + p2RoundWins);
-  }
-}
 
 function updateStatus(msg) {
   statusText.setText(msg);
+}
+
+function drawRoundWins(base, wins, color) {
+  if (!wins) return;
+  const spacing = 22;
+  const radius = 7;
+  const centerY = base.y + base.h + 14;
+  const startX = base.x + base.w / 2 - ((wins - 1) * spacing) / 2;
+  graphics.lineStyle(2, 0x000000, 0.6);
+  for (let i = 0; i < wins; i++) {
+    const cx = startX + i * spacing;
+    graphics.fillStyle(color, 0.9);
+    graphics.fillCircle(cx, centerY, radius);
+    graphics.strokeCircle(cx, centerY, radius);
+  }
+}
+
+function startBackgroundMusic(scene) {
+  const ctx = scene.sound.context;
+  if (!ctx) return;
+  if (!musicGain) {
+    musicGain = ctx.createGain();
+    musicGain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    musicGain.gain.linearRampToValueAtTime(.4, ctx.currentTime + 2);
+    musicGain.connect(ctx.destination);
+  }
+
+  const beat = 0.35;
+  const melody = [523.25, 0, 587.33, 659.25, 0, 587.33, 523.25, 440];
+  const harmony = [392, 0, 440, 0, 349.23, 0, 392, 0];
+  const bass = [196, 0, 220, 0, 174.61, 0, 220, 0];
+  const loopDuration = melody.length * beat;
+
+  const schedulePattern = (startTime) => {
+    const baseTime = startTime + 0.05;
+    const createTone = (frequency, time, length, amp, type) => {
+      const osc = ctx.createOscillator();
+      const noteGain = ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(frequency, time);
+      osc.connect(noteGain);
+      noteGain.connect(musicGain);
+      noteGain.gain.setValueAtTime(0.0001, time);
+      noteGain.gain.linearRampToValueAtTime(amp, time + 0.04);
+      noteGain.gain.exponentialRampToValueAtTime(0.0001, time + length);
+      osc.onended = () => {
+        osc.disconnect();
+        noteGain.disconnect();
+      };
+      osc.start(time);
+      osc.stop(time + length + 0.02);
+    };
+
+    melody.forEach((freq, idx) => {
+      if (!freq) return;
+      const t = baseTime + idx * beat;
+      createTone(freq, t, beat * 0.9, 0.05, 'triangle');
+    });
+
+    harmony.forEach((freq, idx) => {
+      if (!freq) return;
+      const t = baseTime + idx * beat;
+      createTone(freq, t, beat * 0.85, 0.035, 'sine');
+    });
+
+    bass.forEach((freq, idx) => {
+      if (!freq) return;
+      const t = baseTime + idx * beat;
+      createTone(freq, t, beat * 1.1, 0.06, 'sawtooth');
+    });
+
+    const percussionTimes = [0, 2, 4, 6].map(step => baseTime + step * beat);
+    percussionTimes.forEach(t => {
+      const noise = ctx.createOscillator();
+      const gain = ctx.createGain();
+      noise.type = 'square';
+      noise.frequency.setValueAtTime(40, t);
+      noise.connect(gain);
+      gain.connect(musicGain);
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.linearRampToValueAtTime(0.08, t + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+      noise.onended = () => {
+        noise.disconnect();
+        gain.disconnect();
+      };
+      noise.start(t);
+      noise.stop(t + 0.25);
+    });
+  };
+
+  schedulePattern(ctx.currentTime);
+
+  if (musicTimer) {
+    musicTimer.remove(false);
+  }
+
+  musicTimer = scene.time.addEvent({
+    delay: loopDuration * 1000,
+    loop: true,
+    callback: () => schedulePattern(ctx.currentTime)
+  });
+
+  scene.events.once('shutdown', () => {
+    if (musicTimer) {
+      musicTimer.remove(false);
+      musicTimer = null;
+    }
+  });
 }
 
 function endGame(scene) {
@@ -597,7 +726,6 @@ function endGame(scene) {
   
   if (winner === 'PLAYER 1') p1RoundWins++;
   else if (winner === 'PLAYER 2') p2RoundWins++;
-  updateProgress();
   clearResources();
   clearEvents();
   setPlayersVisible(false);
@@ -660,7 +788,7 @@ function endGame(scene) {
       color: '#ffcc66'
     }).setOrigin(0.5).setDepth(1000);
     const updateCountdown = () => {
-      nextRoundText.setText(`La siguiente ronda comienza en ${countdown}...`);
+      nextRoundText.setText(`La siguiente ronda comienza en ${countdown}`);
     };
     updateCountdown();
     if (pendingRoundTimer) {
@@ -724,20 +852,12 @@ function restartGame(scene, resetMatch) {
   setPlayerFacing(p2, 'north');
   if (p1.sprite) {
     p1.runCycle = 0;
-    if (p1.runTween) {
-      p1.runTween.stop();
-      p1.runTween = null;
-    }
-    p1.sprite.setScale(1, 1);
+    p1.bobOffset = 0;
     p1.sprite.setPosition(p1.x, p1.y);
   }
   if (p2.sprite) {
     p2.runCycle = 0;
-    if (p2.runTween) {
-      p2.runTween.stop();
-      p2.runTween = null;
-    }
-    p2.sprite.setScale(1, 1);
+    p2.bobOffset = 0;
     p2.sprite.setPosition(p2.x, p2.y);
   }
   if (p1BoostText) {
@@ -750,7 +870,6 @@ function restartGame(scene, resetMatch) {
   }
   
   setPlayersVisible(true);
-  updateProgress();
   scene.scene.restart();
 }
 
@@ -770,6 +889,9 @@ function setPlayerFacing(player, facing) {
 
 function updatePlayerSprite(scene, player, dx, dy) {
   if (!player || !player.sprite) return;
+  if (typeof player.runCycle !== 'number') player.runCycle = 0;
+  if (typeof player.bobOffset !== 'number') player.bobOffset = 0;
+
   const absDx = Math.abs(dx);
   const absDy = Math.abs(dy);
   const moving = absDx > 0.1 || absDy > 0.1;
@@ -785,27 +907,19 @@ function updatePlayerSprite(scene, player, dx, dy) {
     }
   }
   setPlayerFacing(player, player.facing);
+
   if (moving) {
-    if (!player.runTween) {
-      player.sprite.setScale(1, 1);
-      player.runTween = scene.tweens.add({
-        targets: player.sprite,
-        scaleX: { from: 1, to: 1.08 },
-        scaleY: { from: 1, to: 0.95 },
-        duration: 140,
-        yoyo: true,
-        repeat: -1
-      });
-    }
+    player.runCycle += (absDx + absDy) * 0.35;
+    const hopPhase = (Math.sin(player.runCycle) + 1) * 0.5;
+    const targetBob = -Math.pow(hopPhase, 1.4) * HOP_HEIGHT;
+    player.bobOffset = Phaser.Math.Linear(player.bobOffset, targetBob, 0.45);
   } else {
-    if (player.runTween) {
-      player.runTween.stop();
-      player.runTween = null;
-    }
-    player.sprite.setScale(1, 1);
+    player.bobOffset = Phaser.Math.Linear(player.bobOffset, 0, 0.2);
+    player.runCycle = Phaser.Math.Angle.Wrap(player.runCycle);
   }
+
   player.sprite.rotation = 0;
-  player.sprite.setPosition(player.x, player.y);
+  player.sprite.setPosition(player.x, player.y + player.bobOffset);
 }
 
 function playerHasResources(player) {
@@ -848,16 +962,16 @@ function activateCaffeineBoost(playerNum, scene) {
     p1Boost = duration;
     if (p1BoostText) {
       p1BoostText.setVisible(true);
-      p1BoostText.setText('Cafeina: ' + Math.ceil(p1Boost / 1000) + 's');
+      p1BoostText.setText('Cafeína: ' + Math.ceil(p1Boost / 1000) + 's');
     }
-    updateStatus('Jugador 1 tomo cafe! Impulso de velocidad!');
+    updateStatus('Jugador 1 tomo café! Impulso de velocidad!');
   } else {
     p2Boost = duration;
     if (p2BoostText) {
       p2BoostText.setVisible(true);
-      p2BoostText.setText('Cafeina: ' + Math.ceil(p2Boost / 1000) + 's');
+      p2BoostText.setText('Cafeína: ' + Math.ceil(p2Boost / 1000) + 's');
     }
-    updateStatus('Jugador 2 tomo cafe! Impulso de velocidad!');
+    updateStatus('Jugador 2 tomo café! Impulso de velocidad!');
   }
   playTone(scene, 1200, 0.12);
 }
@@ -893,6 +1007,10 @@ function playTone(scene, freq, dur) {
   
   gain.gain.setValueAtTime(0.08, ctx.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + dur);
+  osc.onended = () => {
+    osc.disconnect();
+    gain.disconnect();
+  };
   
   osc.start(ctx.currentTime);
   osc.stop(ctx.currentTime + dur);
