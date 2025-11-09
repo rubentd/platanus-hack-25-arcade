@@ -273,7 +273,7 @@ const INVULNERABILITY_DURATION = 900;
 const BLINK_TWEEN_DURATION = 80;
 const COOLDOWN_BAR_WIDTH = 4;
 const COOLDOWN_BAR_COLOR = 0xffee55;
-const BACKGROUND_COLORS = [0x111111, 0x181818];
+const BACKGROUND_COLORS = [0x222222, 0x151515, 0x111111];
 const TRAIL_MAX_CLONES = 10;
 const TRAIL_CAPTURE_INTERVAL = 4;
 const TRAIL_FADE_SPEED = 0.001;
@@ -487,7 +487,7 @@ function create() {
   
   // Instructions
   addText(this, SCREEN_WIDTH / 2, 10, 'Lleva los recursos a tus HQ', {
-    fontSize: '20px', color: '#999999'
+    fontSize: '20px', color: '#fefefe', fontStyle: 'bold'
   }).setOrigin(0.5, 0);
 
   addText(this, SCREEN_WIDTH / 2, PLAYFIELD_HEIGHT + PANEL_HEIGHT - 50, 'Tips:\n• Evita bugs y escándalos\n• Entrega recursos rápido', {
@@ -1040,16 +1040,6 @@ function draw() {
     }
   });
   
-  // Draw players via sprites
-  if (p1.sprite) {
-    p1.sprite.setPosition(p1.x, p1.y)
-      .setDepth(p1Boost > 0 ? 12 : 10)
-  }
-  if (p2.sprite) {
-    p2.sprite.setPosition(p2.x, p2.y)
-      .setDepth(p2Boost > 0 ? 12 : 10)
-  }
-  
   // Progress bars
   // Progress bars
   const barWidth = 20;
@@ -1558,11 +1548,12 @@ function updatePlayerSprite(scene, player, dx, dy) {
 
   const bobSpeed = moving ? 0.02 : 0.06;
   const targetBob = moving ? Math.sin(player.walkPhase || 0) * 6 : 0;
-  player.walkPhase = (player.walkPhase || 0) + (absDx + absDy + 0.01) * bobSpeed * 60;
+  player.walkPhase = (player.walkPhase || 0) + (absDx + absDy + 0.01) * bobSpeed * 10;
   if (!moving) {
     player.walkPhase = 0;
   }
   player.sprite.rotation = 0;
+
   player.sprite.setPosition(player.x, player.y + targetBob);
 }
 
@@ -1664,7 +1655,7 @@ function getCooldownFraction(nextShotTime) {
 function drawBackgroundPattern(layer) {
   if (!layer) return;
   layer.clear();
-  const cellSize = 60;
+  const cellSize = 30;
   for (let y = 0; y < 600; y += cellSize) {
     for (let x = 0; x < 800; x += cellSize) {
       const baseColor = BACKGROUND_COLORS[Math.floor(Math.random() * BACKGROUND_COLORS.length)];
