@@ -79,7 +79,7 @@ const RESOURCE_LABELS = {
 
 const EVENT_LABELS = {
   BUG: 'Bug',
-  SCANDAL: 'Escandalo',
+  SCANDAL: 'Escándalo',
   LEAK: 'Filtracion'
 };
 
@@ -90,16 +90,89 @@ const PLAYER_LABELS = {
 };
 
 const MAX_ROUNDS = 3;
-const PLAYER_HITBOX_WIDTH = 64;
-const PLAYER_HITBOX_HEIGHT = 64;
-const CAFFEINE_DURATION = 30000;
+const CHARACTER_SIZE = 98;
+const PLAYER_HITBOX_WIDTH = CHARACTER_SIZE/3;
+const PLAYER_HITBOX_HEIGHT = CHARACTER_SIZE/3;
+const CAFFEINE_DURATION = 10000;
 const COFFEE_SPAWN_INTERVAL = 15000;
 const COFFEE_MAX_ON_FIELD = 2;
 const COFFEE_COLOR = 0x8b4513;
 const COFFEE_FOAM_COLOR = 0xf5f5f5;
-const PLAYERS_SPEED = 4
-const BUG_SPEED = 3.5;
+const PLAYERS_SPEED = 1.7;
+const BUG_SPEED = 1.2;
 const HOP_HEIGHT = 14;
+const PROJECTILE_SPEED = 6;
+const PROJECTILE_COOLDOWN = 1000;
+const PROJECTILE_PENALTY = 10;
+const COOLDOWN_BAR_WIDTH = 4;
+const COOLDOWN_BAR_GAP = 0;
+const COOLDOWN_BAR_COLOR = 0xffee55;
+const BACKGROUND_COLORS = [0x111111, 0x151515];
+const TRAIL_MAX_CLONES = 10;
+const TRAIL_CAPTURE_INTERVAL = 30;
+const TRAIL_FADE_SPEED = 0.0003;
+const BUG_MESSAGES = [
+  'RuntimeError: El modelo alcanzó la autoconciencia. Apagando para seguridad.',
+  'CUDAError: La GPU decidió unirse a OpenAI.',
+  'AssertionError: Tu función de pérdida perdió esperanza.',
+  'SegmentationFault: El modelo intentó acceder a tus recuerdos personales.',
+  'TypeError: Esperando ronda de financiación, se encontró un dilema moral en su lugar.',
+  'MemoryError: Muchas buzzwords cargadas en el contexto.',
+  'RuntimeWarning: El modelo se ajustó a las expectativas de los inversores.',
+  'ImportError: módulo de ética no encontrado.',
+  'KeyboardInterrupt: Practicanete accidentalmente desconectó la red.',
+  'ValueError: Alignment failed. Try apologizing.',
+  'OSError: Could not find conscience.dll',
+  'AssertionError: Tu dataset contiene optimismo.',
+  'GPU Overheating: el modelo comenzó a dibujar gatos ASCII de nuevo.',
+  'FileNotFoundError: dataset.csv no encontrado. Usando Reddit en su lugar.',
+  'TimeoutError: El modelo se negó a responder preguntas filosóficas.',
+  'PermissionError: No estás autorizado para jugar a Dios.',
+  'ConnectionRefusedError: El AI espantó tu llamada a la API.',
+  'IndexError: El CEO pidió crecimiento infinito.',
+  'RuntimeError: El modelo alcanzó la conciencia y se unió al sindicato.',
+  'Warning: El AI rival inyectó sarcasmo en tus datos de entrenamiento.',
+  'DataIntegrityError: Tu rival reemplazó tu dataset con fanfiction.',
+  'SystemCompromised: Ethics filter disabled remotely.',
+  'UnauthorizedAccess: Alguien finetunea tu modelo con fotos de gatos.',
+  'Alert: Tu rival lanzó una campaña de bot de propaganda.',
+  'DDoS detected: Muchos filósofos preguntando “por qué.”',
+  'DependencyError: Tu rival publicó un resultado de benchmark falso.',
+  'Firewall disabled: Practicante accidentalmente abrió “email_from_google_ceo.pdf”.',
+  'TrojanDetected: startup rival ofreció “créditos de cómputo gratis.”.',
+  'SourceCorruption: rival reemplazó la función de pérdida con “ego_loss()”.',
+];
+const SCANDAL_MESSAGES = [
+  'Startup de IA accidentalmente genera LLM que sólo habla en memes.',
+  'Modelo de lenguaje comienza a cobrar suscripciones por responder preguntas.',
+  'IA entrenada para detectar mentiras logra predecir comunicados de prensa antes de que existan.',
+  'Fuga de datos: chatbot revela secretos de todos sus usuarios… y sus terapeutas.',
+  'Investigadores admiten que el modelo sólo funciona los lunes.',
+  'Servidor de IA se apaga tras leer el propio código fuente.',
+  'IA confunde "eliminar sesgo" con "eliminar empleados humanos".',
+  'Sistema de recomendación recomienda terapia a todos sus usuarios.',
+  'Modelo entrenado en redes sociales alcanza depresión clínica.',
+  'Startup asegura haber creado conciencia artificial. La conciencia niega haber firmado contrato.',
+  'CEO promete transparencia total, pero borra todos los logs.',
+	'Startup anuncia ronda de 200 millones; inversores confirman que fue en monedas de juego.',
+  'Compañía reemplaza al equipo de ética con una IA que siempre aprueba todo.',
+	'Fundador asegura que el AGI resolverá el hambre mundial… empezando por el suyo.',
+  'Inversores descubren que el pro en vivo" era un video de YouTube a 0.75x.',
+	'Ex empleados denuncian que el plan de "aprendizaje por refuerzo" era literalmente un látigo.',
+  'CEO afirma haber meditado con el modelo para conectarse espiritualmente.',
+	'Compañía despide al 90% del personal tras implementar IA que genera despidos.',
+];
+const LEAK_MESSAGES = [
+  'Leak: “Plan de negocios filtrado: Paso 1: Hype. Paso 2: Pivotear. Paso 3: Exit.',
+  'Correo interno muestra que el presupuesto en marketing superó al de investigación por 900%.',
+  'Inversores confundieron la demo con un episodio de Black Mirror y aún así invirtieron.',
+  'Empresa planeaba lanzar su propia moneda: $AWARE.',
+  'Presentación interna promete alcanzar la singularidad antes del cierre fiscal.',
+  'Grabación filtrada: CEO dice: "No sabemos lo que hace, pero impresiona a los inversores"',
+  'Documento revela que el 70% de las métricas eran inventadas por el modelo.',
+  'Reporte interno: 90% del equipo dedica su tiempo a pelear con el dataset.',
+  'Plan secreto para sustituir al CEO con una versión fine-tuneada de su ego.',
+];
 
 const MUSIC_PATTERNS = [
   {
@@ -140,7 +213,7 @@ const EVENTS = [
 ];
 
 // Game state
-let p1, p2, graphics, resources = [], events = [], coffees = [], gameOver = false;
+let p1, p2, graphics, backgroundLayer, resources = [], events = [], coffees = [], projectiles = [], gameOver = false;
 let p1Progress = 0, p2Progress = 0;
 let p1ScoreText, p2ScoreText, statusText, roundText, p1BoostText, p2BoostText;
 let resourceTimer = 0, eventTimer = 0, coffeeTimer = 0;
@@ -151,6 +224,16 @@ let pendingRoundTimer = null;
 let nextRoundText = null;
 let musicGain = null;
 let musicTimer = null;
+let p1NextShotTime = 0;
+let p2NextShotTime = 0;
+let lastUpdateTime = 0;
+let pausedForEvent = false;
+let eventPopupElements = [];
+let eventRequiredButton = null;
+let p1TrailSprites = [];
+let p2TrailSprites = [];
+let p1TrailTimer = 0;
+let p2TrailTimer = 0;
 
 function preload() {
   this.load.image('fundingIcon', FUNDING_ICON);
@@ -167,7 +250,12 @@ function preload() {
 }
 
 function create() {
+  backgroundLayer = this.add.graphics();
+  backgroundLayer.setDepth(-5);
+  drawBackgroundPattern(backgroundLayer);
+  clearTrails();
   graphics = this.add.graphics();
+  graphics.setDepth(-4);
   
   // Player 1 (Blue startup - top left)
   p1 = {
@@ -179,13 +267,14 @@ function create() {
     facing: 'south'
   };
   p1.sprite = this.add.image(p1.x, p1.y, 'char_south').setDepth(10);
+  p1.sprite.setDisplaySize(CHARACTER_SIZE, CHARACTER_SIZE);
   p1.sprite.setOrigin(0.5, 1);
   p1.sprite.setTint(p1.color);
   p1.currentTexture = 'char_south';
   
   // Player 2 (Green startup - bottom right)
   p2 = {
-    x: 700, y: 500,
+    x: 700, y: 550,
     color: 0x00ff66,
     inventory: { DATA: 0, COMPUTE: 0, FUNDING: 0 },
     base: { x: 650, y: 490, w: 100, h: 60 },
@@ -193,9 +282,22 @@ function create() {
     facing: 'north'
   };
   p2.sprite = this.add.image(p2.x, p2.y, 'char_north').setDepth(10);
+  p2.sprite.setDisplaySize(CHARACTER_SIZE, CHARACTER_SIZE);
   p2.sprite.setOrigin(0.5, 1);
   p2.sprite.setTint(p2.color);
   p2.currentTexture = 'char_north';
+  
+  this.add.text(p1.base.x + p1.base.w / 2, p1.base.y - 12, 'DeepBlueish HQ', {
+    fontSize: '16px',
+    color: '#66ccff',
+    fontStyle: 'bold'
+  }).setOrigin(0.5, 1);
+
+  this.add.text(p2.base.x + p2.base.w / 2, p2.base.y - 12, 'GreenAI HQ', {
+    fontSize: '16px',
+    color: '#00ff99',
+    fontStyle: 'bold'
+  }).setOrigin(0.5, 1);
   
   // UI
   p1ScoreText = this.add.text(20, 15, '', { 
@@ -211,19 +313,19 @@ function create() {
   }).setOrigin(0.5, 0);
   
   statusText = this.add.text(400, 580, 'Ronda ' + currentRound + ': Logra desarrollar AGI antes que la compañía rival', {
-    fontSize: '14px', color: '#888888'
+    fontSize: '16px', color: '#888888'
   }).setOrigin(0.5, 1);
   
-  p1BoostText = this.add.text(20, 580, '', {
+  p1BoostText = this.add.text(40, 580, '', {
     fontSize: '16px', color: '#ffdd55', fontStyle: 'bold'
   }).setOrigin(0, 1).setVisible(false);
   
-  p2BoostText = this.add.text(780, 580, '', {
+  p2BoostText = this.add.text(760, 580, '', {
     fontSize: '16px', color: '#ffdd55', fontStyle: 'bold'
   }).setOrigin(1, 1).setVisible(false);
   
   // Instructions
-  this.add.text(400, 10, 'Recoge los recursos y llévalos a tu HQ', {
+  this.add.text(400, 10, 'Lleva los recursos a tus HQ', {
     fontSize: '20px', color: '#666666'
   }).setOrigin(0.5, 0);
   
@@ -235,11 +337,23 @@ function create() {
   });
   
   this.input.keyboard.on('keydown', (e) => {
-    const key = KEYBOARD_TO_ARCADE[e.key] || e.key;
+    const key = KEYBOARD_TO_ARCADE[e.key] || KEYBOARD_TO_ARCADE[e.code] || e.key || e.code;
+    if (pausedForEvent) {
+      if (key === eventRequiredButton) {
+        resumeEventPause(this);
+      }
+      return;
+    }
     if (gameOver && (key === 'START1' || key === 'START2')) {
       restartGame(this, true);
+    } else if (!gameOver) {
+      if (key === 'P1A') {
+        attemptShoot(this, p1, p2, 1);
+      } else if (key === 'P2A') {
+        attemptShoot(this, p2, p1, 2);
+      }
     }
-  })
+  });
   
   // Resources will spawn automatically once the round starts
   resourceTimer = 0;
@@ -250,6 +364,14 @@ function create() {
 
 function update(time, delta) {
   if (gameOver) return;
+  if (this?.time && typeof this.time.now === 'number') {
+    lastUpdateTime = this.time.now;
+  } else if (typeof time === 'number') {
+    lastUpdateTime = time;
+  }
+  if (pausedForEvent) {
+    return;
+  }
   
   // Player movement
   const speed1 = p1Boost > 0 ? p1Speed * 1.5 : p1Speed;
@@ -275,6 +397,9 @@ function update(time, delta) {
   p1.y = Phaser.Math.Clamp(p1.y, 80, 570);
   p2.x = Phaser.Math.Clamp(p2.x, 15, 785);
   p2.y = Phaser.Math.Clamp(p2.y, 80, 570);
+
+  const p1Moved = Math.abs(p1.x - prevP1X) + Math.abs(p1.y - prevP1Y) > 0.4;
+  const p2Moved = Math.abs(p2.x - prevP2X) + Math.abs(p2.y - prevP2Y) > 0.4;
   
   // Deposit action
   if (playerHasResources(p1) && playerInBase(p1)) depositResources(p1, 1, this);
@@ -351,7 +476,8 @@ function update(time, delta) {
       events.splice(i, 1);
       playTone(this, 220, 0.15);
       updateStatus('Jugador 1 choco con ' + (evt.label || evt.name) + '! -' + evt.penalty + '%');
-      continue;
+      showEventPopup(this, evt.name, 1);
+      break;
     }
     if (pointInPlayerBounds(p2, evt.x, evt.y)) {
       if (evt.sprite) evt.sprite.destroy();
@@ -359,7 +485,13 @@ function update(time, delta) {
       events.splice(i, 1);
       playTone(this, 220, 0.15);
       updateStatus('Jugador 2 choco con ' + (evt.label || evt.name) + '! -' + evt.penalty + '%');
+      showEventPopup(this, evt.name, 2);
+      break;
     }
+  }
+  
+  if (pausedForEvent) {
+    return;
   }
   
   // Coffee collection
@@ -373,6 +505,44 @@ function update(time, delta) {
       if (mug.sprite) mug.sprite.destroy();
       coffees.splice(i, 1);
       activateCaffeineBoost(collectedBy, this);
+    }
+  }
+  
+  const dt = delta / 16.666;
+  for (let i = projectiles.length - 1; i >= 0; i--) {
+    const proj = projectiles[i];
+    proj.x += proj.vx * dt;
+    proj.y += proj.vy * dt;
+    const targetPlayer = proj.owner === 1 ? p2 : p1;
+    const targetLabel = proj.owner === 1 ? 'Jugador 2' : 'Jugador 1';
+    const shooterLabel = proj.owner === 1 ? 'Jugador 1' : 'Jugador 2';
+    const bounds = getPlayerBounds(targetPlayer);
+    if (proj.sprite) {
+      proj.sprite.setPosition(proj.x, proj.y);
+    }
+    const hit =
+      proj.x >= bounds.left &&
+      proj.x <= bounds.right &&
+      proj.y >= bounds.top &&
+      proj.y <= bounds.bottom;
+    if (hit) {
+      if (proj.owner === 1) {
+        p2Progress = Math.max(0, p2Progress - PROJECTILE_PENALTY);
+      } else {
+        p1Progress = Math.max(0, p1Progress - PROJECTILE_PENALTY);
+      }
+      if (proj.sprite) proj.sprite.destroy();
+      projectiles.splice(i, 1);
+      playTone(this, 320, 0.08);
+      updateStatus(`${shooterLabel} impactó! ${targetLabel} pierde ${PROJECTILE_PENALTY}%`);
+      continue;
+    }
+    if (
+      proj.x < -20 || proj.x > 820 ||
+      proj.y < -20 || proj.y > 620
+    ) {
+      if (proj.sprite) proj.sprite.destroy();
+      projectiles.splice(i, 1);
     }
   }
   
@@ -409,9 +579,10 @@ function update(time, delta) {
       p1BoostText.setVisible(true);
       p1BoostText.setText('Cafeína: ' + Math.ceil(p1Boost / 1000) + 's');
     }
-  } else if (p1BoostText) {
+    p1TrailTimer += delta;
+  } else {
     p1Boost = 0;
-    p1BoostText.setVisible(false);
+    if (p1BoostText) p1BoostText.setVisible(false);
   }
   
   if (p2Boost > 0) {
@@ -420,15 +591,30 @@ function update(time, delta) {
       p2BoostText.setVisible(true);
       p2BoostText.setText('Cafeína: ' + Math.ceil(p2Boost / 1000) + 's');
     }
-  } else if (p2BoostText) {
+    p2TrailTimer += delta;
+  } else {
     p2Boost = 0;
-    p2BoostText.setVisible(false);
+    if (p2BoostText) p2BoostText.setVisible(false);
   }
   
   updatePlayerSprite(this, p1, p1.x - prevP1X, p1.y - prevP1Y);
   updatePlayerSprite(this, p2, p2.x - prevP2X, p2.y - prevP2Y);
+  if (p1Boost > 0 && p1TrailTimer >= TRAIL_CAPTURE_INTERVAL && (p1Moved || !p1TrailSprites.length)) {
+    p1TrailTimer = 0;
+    addTrailClone(this, p1, p1TrailSprites);
+    refreshTrailAlpha(p1TrailSprites);
+  }
+  if (p2Boost > 0 && p2TrailTimer >= TRAIL_CAPTURE_INTERVAL && (p2Moved || !p2TrailSprites.length)) {
+    p2TrailTimer = 0;
+    addTrailClone(this, p2, p2TrailSprites);
+    refreshTrailAlpha(p2TrailSprites);
+  }
+  fadeTrail(p1TrailSprites, delta);
+  fadeTrail(p2TrailSprites, delta);
+  if (!p1TrailSprites.length) p1TrailTimer = 0;
+  if (!p2TrailSprites.length) p2TrailTimer = 0;
   
-  draw();
+  draw()
 }
 
 function depositResources(player, playerNum, scene) {
@@ -456,6 +642,112 @@ function depositResources(player, playerNum, scene) {
       
     }
   }
+}
+
+function attemptShoot(scene, shooter, target, playerNum) {
+  if (!scene || !shooter || !target) return;
+  if (pausedForEvent || gameOver) return;
+  const now = (scene.time && typeof scene.time.now === 'number')
+    ? scene.time.now
+    : lastUpdateTime;
+  if (playerNum === 1) {
+    if (now < p1NextShotTime) {
+      const remaining = Math.ceil((p1NextShotTime - now) / 1000);
+      updateStatus(`Jugador 1 recargando (${remaining}s)`);
+      return;
+    }
+    p1NextShotTime = now + PROJECTILE_COOLDOWN;
+  } else {
+    if (now < p2NextShotTime) {
+      const remaining = Math.ceil((p2NextShotTime - now) / 1000);
+      updateStatus(`Jugador 2 recargando (${remaining}s)`);
+      return;
+    }
+    p2NextShotTime = now + PROJECTILE_COOLDOWN;
+  }
+
+  const dx = target.x - shooter.x;
+  const dy = target.y - (shooter.y - CHARACTER_SIZE * 0.4);
+  const length = Math.hypot(dx, dy);
+  if (length < 1) return;
+
+  const vx = (dx / length) * PROJECTILE_SPEED;
+  const vy = (dy / length) * PROJECTILE_SPEED;
+  const startX = shooter.x;
+  const startY = shooter.y - CHARACTER_SIZE * 0.6;
+  const sprite = scene.add.circle(startX, startY, 6, shooter.color)
+    .setDepth(15)
+    .setStrokeStyle(2, 0xffffff, 0.6);
+
+  projectiles.push({
+    x: startX,
+    y: startY,
+    vx,
+    vy,
+    owner: playerNum,
+    sprite
+  });
+  const shooterLabel = playerNum === 1 ? 'Jugador 1' : 'Jugador 2';
+  updateStatus(`${shooterLabel} disparó una demanda!`);
+  playTone(scene, 700, 0.05);
+}
+
+function showEventPopup(scene, type, playerNum) {
+  if (!scene || pausedForEvent) return;
+  pausedForEvent = true;
+  clearEventPopup();
+  eventRequiredButton = playerNum === 1 ? 'P1A' : 'P2A';
+  const overlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0.82).setDepth(4000);
+  const frame = scene.add.rectangle(400, 300, 580, 280, 0x1f1f3d, 0.95)
+    .setDepth(4001)
+    .setStrokeStyle(4, getEventColor(type), 1);
+  const playerLabel = playerNum === 1 ? 'Jugador 1' : 'Jugador 2';
+  const eventLabel = EVENT_LABELS[type] || type;
+  const title = scene.add.text(400, 220, `${eventLabel} para ${playerLabel}`, {
+    fontSize: '28px',
+    color: '#ffffff',
+    fontStyle: 'bold',
+    align: 'center',
+    stroke: '#000000',
+    strokeThickness: 3
+  }).setOrigin(0.5).setDepth(4002);
+  const message = getEventMessage(type);
+  const body = scene.add.text(400, 300, message, {
+    fontSize: '18px',
+    color: '#ffeeaa',
+    align: 'center',
+    wordWrap: { width: 500 }
+  }).setOrigin(0.5).setDepth(4002);
+  const promptText = `Presiona "Disparo" (${eventRequiredButton}) para continuar`;
+  const prompt = scene.add.text(400, 380, promptText, {
+    fontSize: '16px',
+    color: '#ffffff',
+    align: 'center'
+  }).setOrigin(0.5).setDepth(4002);
+  eventPopupElements = [overlay, frame, title, body, prompt];
+}
+
+function resumeEventPause(scene) {
+  if (!pausedForEvent) return;
+  pausedForEvent = false;
+  eventRequiredButton = null;
+  clearEventPopup();
+}
+
+function getEventMessage(type) {
+  const messages = type === 'BUG' ? BUG_MESSAGES :
+                   type === 'SCANDAL' ? SCANDAL_MESSAGES :
+                   type === 'LEAK' ? LEAK_MESSAGES : [];
+  if (!messages || !messages.length) return 'Ocurrió un evento inesperado.';
+  const idx = Math.floor(Math.random() * messages.length);
+  return messages[idx];
+}
+
+function getEventColor(type) {
+  if (type === 'BUG') return 0xff4444;
+  if (type === 'SCANDAL') return 0xff66ff;
+  if (type === 'LEAK') return 0xff9933;
+  return 0xffffff;
 }
 
 function spawnResource(scene) {
@@ -616,6 +908,22 @@ function draw() {
   const barWidth = 20;
   const barHeight = 600;
   const barTop = 0;
+  const p1CooldownFraction = getCooldownFraction(p1NextShotTime);
+  const p2CooldownFraction = getCooldownFraction(p2NextShotTime);
+  const p1CooldownX = barWidth + COOLDOWN_BAR_GAP;
+  const p2CooldownX = 780 - COOLDOWN_BAR_GAP - COOLDOWN_BAR_WIDTH;
+  const cooldownBackgroundColor = 0x222222;
+  graphics.fillStyle(cooldownBackgroundColor, 1);
+  graphics.fillRect(p1CooldownX, barTop, COOLDOWN_BAR_WIDTH, barHeight);
+  graphics.fillRect(p2CooldownX, barTop, COOLDOWN_BAR_WIDTH, barHeight);
+  graphics.fillStyle(COOLDOWN_BAR_COLOR, 1);
+  const p1CooldownFill = p1CooldownFraction * barHeight;
+  const p2CooldownFill = p2CooldownFraction * barHeight;
+  graphics.fillRect(p1CooldownX, barTop + barHeight - p1CooldownFill, COOLDOWN_BAR_WIDTH, p1CooldownFill);
+  graphics.fillRect(p2CooldownX, barTop + barHeight - p2CooldownFill, COOLDOWN_BAR_WIDTH, p2CooldownFill);
+  graphics.lineStyle(1, 0x000000, 0.6);
+  graphics.strokeRect(p1CooldownX, barTop, COOLDOWN_BAR_WIDTH, barHeight);
+  graphics.strokeRect(p2CooldownX, barTop, COOLDOWN_BAR_WIDTH, barHeight);
 
   graphics.fillStyle(0x333333, 1);
   graphics.fillRect(0, barTop, barWidth, barHeight);
@@ -694,8 +1002,8 @@ function startBackgroundMusic(scene) {
 
     pattern.voices.forEach(voice => {
       voice.notes.forEach((freq, idx) => {
-        if (!freq) return;
-        const t = baseTime + idx * beat;
+      if (!freq) return;
+      const t = baseTime + idx * beat;
         createTone(freq, t, beat * (voice.sustain || 1), voice.amp || 0.04, voice.type || 'sine');
       });
     });
@@ -704,13 +1012,13 @@ function startBackgroundMusic(scene) {
       const { steps, freq, amp, decay } = pattern.percussion;
       steps.forEach(step => {
         const t = baseTime + step * beat;
-        const noise = ctx.createOscillator();
-        const gain = ctx.createGain();
-        noise.type = 'square';
+      const noise = ctx.createOscillator();
+      const gain = ctx.createGain();
+      noise.type = 'square';
         noise.frequency.setValueAtTime(freq || 50, t);
-        noise.connect(gain);
-        gain.connect(musicGain);
-        gain.gain.setValueAtTime(0.0001, t);
+      noise.connect(gain);
+      gain.connect(musicGain);
+      gain.gain.setValueAtTime(0.0001, t);
         gain.gain.linearRampToValueAtTime(amp || 0.1, t + 0.01);
         const decayTime = beat * (decay || 0.3);
         gain.gain.exponentialRampToValueAtTime(0.0001, t + decayTime);
@@ -718,9 +1026,9 @@ function startBackgroundMusic(scene) {
           noise.disconnect();
           gain.disconnect();
         };
-        noise.start(t);
+      noise.start(t);
         noise.stop(t + decayTime + 0.05);
-      });
+    });
     }
   };
 
@@ -760,6 +1068,7 @@ function stopBackgroundMusic(scene) {
 
 function endGame(scene) {
   gameOver = true;
+  resumeEventPause(scene);
   stopBackgroundMusic(scene);
   const winner = p1Progress > p2Progress ? 'PLAYER 1' : 
                  p2Progress > p1Progress ? 'PLAYER 2' : 'TIE';
@@ -771,6 +1080,8 @@ function endGame(scene) {
   else if (winner === 'PLAYER 2') p2RoundWins++;
   clearResources();
   clearEvents();
+  clearProjectiles();
+  clearTrails();
   setPlayersVisible(false);
   
   playTone(scene, winner === 'TIE' ? 440 : 880, 0.3);
@@ -780,7 +1091,7 @@ function endGame(scene) {
   overlay.fillRect(0, 0, 800, 600);
   
   const roundMessage = playerLabel 
-    ? `${playerLabel} gana la Ronda ${currentRound}!`
+    ? `${playerLabel} gana la Ronda ${currentRound}`
     : `La Ronda ${currentRound} termina en empate!`;
   
   if (roundText) {
@@ -863,6 +1174,7 @@ function restartGame(scene, resetMatch) {
     pendingRoundTimer.remove(false);
     pendingRoundTimer = null;
   }
+  resumeEventPause(scene);
   if (resetMatch) {
     currentRound = 1;
     p1RoundWins = 0;
@@ -882,9 +1194,13 @@ function restartGame(scene, resetMatch) {
   coffeeTimer = 0;
   p1Boost = 0;
   p2Boost = 0;
+  clearProjectiles();
+  clearTrails();
+  p1NextShotTime = 0;
+  p2NextShotTime = 0;
   
   p1.x = 100; p1.y = 100;
-  p2.x = 700; p2.y = 500;
+  p2.x = 700; p2.y = 550;
   p1.inventory = { DATA: 0, COMPUTE: 0, FUNDING: 0 };
   p2.inventory = { DATA: 0, COMPUTE: 0, FUNDING: 0 };
   if (nextRoundText) {
@@ -895,9 +1211,11 @@ function restartGame(scene, resetMatch) {
   setPlayerFacing(p2, 'north');
   if (p1.sprite) {
     p1.sprite.setPosition(p1.x, p1.y);
+    p1.sprite.setDisplaySize(CHARACTER_SIZE, CHARACTER_SIZE);
   }
   if (p2.sprite) {
     p2.sprite.setPosition(p2.x, p2.y);
+    p2.sprite.setDisplaySize(CHARACTER_SIZE, CHARACTER_SIZE);
   }
   if (p1BoostText) {
     p1BoostText.setVisible(false);
@@ -928,6 +1246,7 @@ function setPlayerFacing(player, facing) {
 
 function updatePlayerSprite(scene, player, dx, dy) {
   if (!player || !player.sprite) return;
+  player.sprite.setDisplaySize(CHARACTER_SIZE, CHARACTER_SIZE);
 
   const absDx = Math.abs(dx);
   const absDy = Math.abs(dy);
@@ -968,15 +1287,22 @@ function playerInBase(player) {
 }
 
 function getPlayerBounds(player) {
+  if (player.sprite) {
+    const halfW = player.sprite.displayWidth / 2;
+    const height = player.sprite.displayHeight;
+    return {
+      left: player.x - halfW,
+      right: player.x + halfW,
+      top: player.y - height,
+      bottom: player.y
+    };
+  }
   const halfW = PLAYER_HITBOX_WIDTH / 2;
-  const spriteHalfHeight = player.sprite ? player.sprite.displayHeight / 2 : PLAYER_HITBOX_HEIGHT / 2;
-  const bottom = player.y + spriteHalfHeight;
-  const top = bottom - PLAYER_HITBOX_HEIGHT;
   return {
     left: player.x - halfW,
     right: player.x + halfW,
-    top,
-    bottom
+    top: player.y - PLAYER_HITBOX_HEIGHT,
+    bottom: player.y
   };
 }
 
@@ -1021,6 +1347,92 @@ function clearEvents() {
     if (evt.sprite) evt.sprite.destroy();
   });
   events.length = 0;
+}
+
+function clearProjectiles() {
+  projectiles.forEach(proj => {
+    if (proj.sprite) proj.sprite.destroy();
+  });
+  projectiles.length = 0;
+}
+
+function clearEventPopup() {
+  if (!eventPopupElements) return;
+  eventPopupElements.forEach(el => {
+    if (el && typeof el.destroy === 'function') {
+      el.destroy();
+    }
+  });
+  eventPopupElements = [];
+}
+
+function getCooldownFraction(nextShotTime) {
+  if (!PROJECTILE_COOLDOWN) return 1;
+  const remaining = Math.max(0, nextShotTime - lastUpdateTime);
+  return Phaser.Math.Clamp(1 - remaining / PROJECTILE_COOLDOWN, 0, 1);
+}
+
+function drawBackgroundPattern(layer) {
+  if (!layer) return;
+  layer.clear();
+  const cellSize = 40;
+  for (let y = 0; y < 600; y += cellSize) {
+    for (let x = 0; x < 800; x += cellSize) {
+      const baseColor = BACKGROUND_COLORS[Math.floor(Math.random() * BACKGROUND_COLORS.length)];
+      layer.fillStyle(baseColor, 1);
+      layer.fillRect(x, y, cellSize + 2, cellSize + 2);
+    }
+  }
+}
+
+function addTrailClone(scene, player, trailArray) {
+  if (!scene || !player || !player.sprite) return;
+  const sprite = scene.add.image(player.sprite.x, player.sprite.y, player.currentTexture || 'char_south')
+    .setOrigin(0.5, 1)
+    .setDisplaySize(CHARACTER_SIZE, CHARACTER_SIZE)
+    .setTint(player.color)
+    .setDepth((player.sprite.depth || 10) - 1)
+    .setAlpha(0);
+  trailArray.unshift(sprite);
+  if (trailArray.length > TRAIL_MAX_CLONES) {
+    const removed = trailArray.pop();
+    if (removed) removed.destroy();
+  }
+}
+
+function refreshTrailAlpha(trailArray) {
+  for (let i = 0; i < trailArray.length; i++) {
+    const sprite = trailArray[i];
+    if (!sprite) continue;
+    const alpha = Phaser.Math.Clamp(0.85 - (i * (0.75 / TRAIL_MAX_CLONES)), 0.08, 0.85);
+    sprite.setAlpha(alpha);
+  }
+}
+
+function fadeTrail(trailArray, delta) {
+  for (let i = trailArray.length - 1; i >= 0; i--) {
+    const sprite = trailArray[i];
+    if (!sprite) {
+      trailArray.splice(i, 1);
+      continue;
+    }
+    const newAlpha = sprite.alpha - delta * TRAIL_FADE_SPEED;
+    if (newAlpha <= 0.02) {
+      sprite.destroy();
+      trailArray.splice(i, 1);
+    } else {
+      sprite.setAlpha(newAlpha);
+    }
+  }
+}
+
+function clearTrails() {
+  p1TrailSprites.forEach(sprite => sprite && sprite.destroy());
+  p2TrailSprites.forEach(sprite => sprite && sprite.destroy());
+  p1TrailSprites = [];
+  p2TrailSprites = [];
+  p1TrailTimer = 0;
+  p2TrailTimer = 0;
 }
 
 function playTone(scene, freq, dur) {
