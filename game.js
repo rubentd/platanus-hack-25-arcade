@@ -378,6 +378,7 @@ let startScreenShown = false;
 let p1InvulnUntil = 0, p2InvulnUntil = 0;
 let p1BlinkTween = null, p2BlinkTween = null;
 let p1InvulnTimer = null, p2InvulnTimer = null;
+let matchFinished = false;
 
 function preload() {
   this.load.image('hq_base', HQ_ICON);
@@ -485,13 +486,6 @@ function create() {
   addText(this, SCREEN_WIDTH / 2, 10, 'Lleva los recursos a tus HQ', {
     fontSize: '20px', color: '#fefefe', fontStyle: 'bold'
   }).setOrigin(0.5, 0);
-
-  addText(this, SCREEN_WIDTH / 2, PLAYFIELD_HEIGHT + PANEL_HEIGHT - 50, 'Tips:\n• Evita bugs y escándalos\n• Entrega recursos rápido', {
-    fontSize: '12px',
-    color: '#888888',
-    align: 'center',
-    wordWrap: { width: SCREEN_WIDTH - PANEL_MARGIN_X * 2 - 20 }
-  }).setOrigin(0.5, 0);
   
   updateStatus('Ronda ' + currentRound + ': Logra desarrollar AGI antes que la compañía rival');
   p1ScoreText.setText('0%');
@@ -512,9 +506,13 @@ function create() {
       }
       return;
     }
-    if (gameOver && (key === 'START1' || key === 'START2')) {
-      restartGame(this, true);
-    } else if (!gameOver) {
+    if (gameOver) {
+      if (key === 'START1' || key === 'START2') {
+        restartGame(this, matchFinished);
+      }
+      return;
+    }
+    if (!gameOver) {
       if (key === 'P1A') {
         attemptShoot(this, p1, p2, 1);
       } else if (key === 'P2A') {
@@ -1373,6 +1371,7 @@ function endGame(scene) {
   const matchWinnerKey = p1RoundWins >= 2 ? 'PLAYER 1' :
                         p2RoundWins >= 2 ? 'PLAYER 2' : null;
   const finalRound = matchWinnerKey !== null || currentRound >= MAX_ROUNDS;
+  matchFinished = finalRound;
 
   if (finalRound) {
     const totalWinnerKey = matchWinnerKey !== null ? matchWinnerKey :
@@ -1457,6 +1456,7 @@ function restartGame(scene, resetMatch) {
     pendingRoundTimer.remove(false);
     pendingRoundTimer = null;
   }
+  matchFinished = false;
   if (resetMatch) {
     currentRound = 1;
     p1RoundWins = 0;
