@@ -239,6 +239,10 @@ const config = {
   backgroundColor: '#1a1a2e',
   scene: { preload, create, update },
   pixelArt: true,
+  fps: {
+    target: 24,
+    forceSetTimeOut: true
+  },
   render: {
     antialias: false,
     pixelArt: true,
@@ -281,17 +285,11 @@ const TRAIL_FADE_SPEED = 0.001;
 const TRAIL_CAPTURE_INTERVAL = 4;
 const BUG_MESSAGES = [
   'RuntimeError: El modelo alcanzó la autoconciencia. Apagando para seguridad.',
-  'CUDAError: La GPU decidió unirse a OpenAI.',
-  'SegmentationFault: El modelo intentó acceder a tus recuerdos personales.',
   'MemoryError: Muchas buzzwords cargadas en el contexto.',
-  'RuntimeWarning: El modelo se ajustó a las expectativas de los inversores.',
   'ImportError: módulo de ética no encontrado.',
-  'KeyboardInterrupt: Practicanete accidentalmente desconectó la red.',
   'GPU Overheating: el modelo comenzó a dibujar gatos ASCII de nuevo.',
   'FileNotFoundError: dataset.csv no encontrado. Usando Reddit en su lugar.',
   'TimeoutError: El modelo se negó a responder preguntas filosóficas.',
-  'PermissionError: No estás autorizado para jugar a Dios.',
-  'RuntimeError: El modelo alcanzó la conciencia y se unió al sindicato.',
   'Warning: El AI rival inyectó sarcasmo en tus datos de entrenamiento.',
   'DataIntegrityError: Tu rival reemplazó tu dataset con fanfiction.',
   'SystemCompromised: Filtro de ética desactivado remotamente.',
@@ -299,15 +297,11 @@ const BUG_MESSAGES = [
 ]
 const SCANDAL_MESSAGES = [
   'Startup de IA accidentalmente genera LLM que sólo habla en memes.',
-  'IA entrenada para detectar mentiras logra predecir comunicados de prensa antes de que existan.',
   'Investigadores admiten que el modelo sólo funciona los lunes.',
-  'Servidor de IA se apaga tras leer el propio código fuente.',
-  'Sistema de recomendación recomienda terapia a todos sus usuarios.',
   'Modelo entrenado en redes sociales alcanza depresión clínica.',
   'CEO promete transparencia total, pero borra todos los logs.',
   'Compañía reemplaza al equipo de ética con una IA que siempre aprueba todo.',
-	'Fundador asegura que el AGI resolverá el hambre mundia, empezando por la suya.',
-  'Inversores descubren que el demo en vivo era un video de YouTube a 2x.',
+  'Inversores descubren que el demo en vivo era un video de YouTube en 2x.',
 	'Ex empleados denuncian que el plan de "aprendizaje por refuerzo" era literalmente un látigo.',
 	'Compañía despide al 90% del personal tras implementar IA que genera despidos.',
 ];
@@ -318,7 +312,6 @@ const LEAK_MESSAGES = [
   'Empresa planeaba lanzar su propia moneda: $AWARE.',
   'Grabación filtrada: CEO dice: "No sabemos lo que hace, pero impresiona a los inversores"',
   'Documento revela que el 70% de las métricas eran inventadas por el modelo.',
-  'Reporte interno: 90% del equipo dedica su tiempo a pelear con el dataset.',
   'Plan secreto para sustituir al CEO con una versión fine-tuneada de su ego.',
 ];
 
@@ -398,9 +391,10 @@ function preload() {
   this.load.image('coffeeIcon', COFFEE_ICON);
 }
 
-function create() {  
+function create() {
   backgroundLayer = this.add.graphics();
   backgroundLayer.setDepth(-5);
+  backgroundLayer.setAlpha(0.8);
   drawBackgroundPattern(backgroundLayer);
   panelGraphics = this.add.graphics();
   panelGraphics.setDepth(5);
@@ -549,7 +543,8 @@ function update(time, delta) {
   } else if (typeof time === 'number') {
     lastUpdateTime = time;
   }
-  const deltaSeconds = (delta && delta > 0 ? delta : 16.6667) / 1000;
+  const defaultStepMs = 1000 / 24;
+  const deltaSeconds = (delta && delta > 0 ? delta : defaultStepMs) / 1000;
   // Player movement
   const player1Speed = PLAYERS_SPEED * (p1Boost > 0 ? 1.5 : 1);
   const player2Speed = PLAYERS_SPEED * (p2Boost > 0 ? 1.5 : 1);
@@ -697,6 +692,11 @@ function update(time, delta) {
     const bounds = getPlayerBounds(targetPlayer);
     if (proj.sprite) {
       proj.sprite.setPosition(proj.x, proj.y);
+      const elapsed = (this.time.now || 0) - (proj.spawnTime || 0);
+      const scalePulse = 1 + Math.sin(elapsed * 0.02) * 0.25;
+      const alphaPulse = 0.75 + Math.sin(elapsed * 0.015 + Math.PI / 2) * 0.15;
+      proj.sprite.setScale(scalePulse);
+      proj.sprite.setAlpha(Phaser.Math.Clamp(alphaPulse, 0.4, 1));
     }
     const hit =
       proj.x >= bounds.left &&
@@ -859,14 +859,14 @@ function attemptShoot(scene, shooter, target, playerNum) {
   const startX = shooter.x;
   const startY = shooter.y - CHARACTER_SIZE * 0.6;
   const sprite = scene.add.circle(startX, startY, 6, shooter.color)
-    .setDepth(15)
-    .setStrokeStyle(2, 0xffffff, 0.6);
+    .setDepth(15);
 
   projectiles.push({
     x: startX,
     y: startY,
     vx,
     vy,
+    spawnTime: scene.time.now || 0,
     owner: playerNum,
     sprite
   });
@@ -1659,14 +1659,97 @@ function getCooldownFraction(nextShotTime) {
 function drawBackgroundPattern(layer) {
   if (!layer) return;
   layer.clear();
-  const cellSize = 30;
-  for (let y = 0; y < 600; y += cellSize) {
-    for (let x = 0; x < 800; x += cellSize) {
-      const baseColor = BACKGROUND_COLORS[Math.floor(Math.random() * BACKGROUND_COLORS.length)];
-      layer.fillStyle(baseColor, 1);
-      layer.fillRect(x, y, cellSize + 2, cellSize + 2);
+  const width = SCREEN_WIDTH;
+  const height = SCREEN_HEIGHT;
+  const margin = 0;
+  const innerWidth = width - margin * 2;
+  const innerHeight = height - margin * 2;
+  const backdropColor = 0x0f1729;
+  const roadColor = 0x1e2d3f;
+  const roadStripeColor = 0xbcd4f7;
+  const parkGrass = 0x18702e;
+
+  layer.fillStyle(backdropColor, 1);
+  layer.fillRect(0, 0, width, height);
+
+  const roadWidth = 36;
+  const blockWidths = [240, 248, 240];
+  const blockHeights = [176, 176, 176];
+  const totalBlockWidth = blockWidths.reduce((acc, w) => acc + w, 0) + roadWidth * (blockWidths.length - 1);
+  const totalBlockHeight = blockHeights.reduce((acc, h) => acc + h, 0) + roadWidth * (blockHeights.length - 1);
+  const cityLeft = margin + Math.max(0, (innerWidth - totalBlockWidth) / 2);
+  const cityTop = margin + Math.max(0, (innerHeight - totalBlockHeight) / 2) - 40;
+  const cityRight = cityLeft + totalBlockWidth;
+  const cityBottom = cityTop + totalBlockHeight;
+
+  const verticalRoads = [];
+  const horizontalRoads = [];
+
+  let currentX = cityLeft;
+  blockWidths.forEach((bw, idx) => {
+    currentX += bw;
+    if (idx < blockWidths.length - 1) {
+      verticalRoads.push(currentX);
+      currentX += roadWidth;
     }
-  }
+  });
+
+  let currentY = cityTop;
+  blockHeights.forEach((bh, idx) => {
+    currentY += bh;
+    if (idx < blockHeights.length - 1) {
+      horizontalRoads.push(currentY);
+      currentY += roadWidth;
+    }
+  });
+
+  // Roads
+  layer.fillStyle(roadColor, 1);
+  verticalRoads.forEach(x => {
+    const top = cityTop - roadWidth;
+    const bottom = cityBottom + roadWidth;
+    const clampedTop = Math.max(margin, top);
+    const clampedBottom = Math.min(height - margin, bottom);
+    if (clampedBottom > clampedTop) {
+      layer.fillRect(x, clampedTop, roadWidth, clampedBottom - clampedTop);
+    }
+  });
+  horizontalRoads.forEach(y => {
+    const left = cityLeft - roadWidth;
+    const right = cityRight + roadWidth;
+    const clampedLeft = Math.max(margin, left);
+    const clampedRight = Math.min(width - margin, right);
+    if (clampedRight > clampedLeft) {
+      layer.fillRect(clampedLeft, y, clampedRight - clampedLeft, roadWidth);
+    }
+  });
+
+  // Road markings
+  layer.fillStyle(roadStripeColor, 0.25);
+  verticalRoads.forEach(x => {
+    const startY = Math.max(margin + 8, cityTop - roadWidth + 8);
+    const endY = Math.min(height - margin - 8, cityBottom + roadWidth - 8);
+    for (let y = startY; y < endY; y += 28) {
+      layer.fillRect(x + roadWidth / 2 - 2, y, 4, 14);
+    }
+  });
+  horizontalRoads.forEach(y => {
+    const startX = Math.max(margin + 8, cityLeft - roadWidth + 8);
+    const endX = Math.min(width - margin - 8, cityRight + roadWidth - 8);
+    for (let x = startX; x < endX; x += 32) {
+      layer.fillRect(x, y + roadWidth / 2 - 2, 16, 4);
+    }
+  });
+
+  
+  // Central park
+  const parkRadius = 70;
+  const parkX = width / 2;
+  const parkY = height / 2 - 40;
+  layer.fillStyle(parkGrass, 1);
+  layer.fillCircle(parkX, parkY, parkRadius);
+
+ 
 }
 
 function addTrailClone(scene, player, trailArray) {
