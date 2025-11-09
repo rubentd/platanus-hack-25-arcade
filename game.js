@@ -97,8 +97,41 @@ const COFFEE_SPAWN_INTERVAL = 15000;
 const COFFEE_MAX_ON_FIELD = 2;
 const COFFEE_COLOR = 0x8b4513;
 const COFFEE_FOAM_COLOR = 0xf5f5f5;
-const BUG_SPEED = 1;
+const PLAYERS_SPEED = 4
+const BUG_SPEED = 3.5;
 const HOP_HEIGHT = 14;
+
+const MUSIC_PATTERNS = [
+  {
+    beat: 0.36,
+    voices: [
+      { notes: [523.25, 0, 587.33, 659.25, 0, 587.33, 523.25, 440], amp: 0.05, type: 'triangle', sustain: 0.9 },
+      { notes: [392, 0, 440, 0, 349.23, 0, 392, 0], amp: 0.035, type: 'sine', sustain: 0.85 },
+      { notes: [196, 0, 220, 0, 174.61, 0, 220, 0], amp: 0.06, type: 'sawtooth', sustain: 1.1 }
+    ],
+    percussion: { steps: [0, 2, 4, 6], freq: 55, amp: 0.08, decay: 0.24 }
+  },
+  {
+    beat: 0.3,
+    voices: [
+      { notes: [659.25, 0, 698.46, 783.99, 0, 698.46, 659.25, 587.33], amp: 0.055, type: 'triangle', sustain: 0.9 },
+      { notes: [440, 0, 493.88, 0, 392, 0, 440, 0], amp: 0.04, type: 'square', sustain: 0.8 },
+      { notes: [220, 0, 246.94, 0, 196, 0, 220, 0], amp: 0.065, type: 'sawtooth', sustain: 1.0 },
+      { notes: [880, 0, 0, 987.77, 0, 1046.5, 0, 987.77], amp: 0.035, type: 'triangle', sustain: 0.6 }
+    ],
+    percussion: { steps: [0, 1.5, 3, 4.5, 6], freq: 65, amp: 0.11, decay: 0.22 }
+  },
+  {
+    beat: 0.24,
+    voices: [
+      { notes: [783.99, 880, 987.77, 1046.5, 1174.66, 1046.5, 987.77, 880], amp: 0.06, type: 'triangle', sustain: 0.95 },
+      { notes: [523.25, 0, 587.33, 0, 659.25, 0, 698.46, 0], amp: 0.05, type: 'square', sustain: 0.8 },
+      { notes: [261.63, 0, 293.66, 0, 329.63, 0, 349.23, 0], amp: 0.07, type: 'sawtooth', sustain: 1.15 },
+      { notes: [1174.66, 0, 1318.51, 0, 1396.91, 0, 1567.98, 0], amp: 0.045, type: 'sine', sustain: 0.7 }
+    ],
+    percussion: { steps: [0, 0.75, 1.5, 2.25, 3, 3.75, 4.5, 5.25, 6, 6.75], freq: 80, amp: 0.15, decay: 0.2 }
+  }
+];
 
 const EVENTS = [
   { name: 'BUG', color: 0xff0000, penalty: 10, icon: 'bugIcon' },
@@ -111,7 +144,7 @@ let p1, p2, graphics, resources = [], events = [], coffees = [], gameOver = fals
 let p1Progress = 0, p2Progress = 0;
 let p1ScoreText, p2ScoreText, statusText, roundText, p1BoostText, p2BoostText;
 let resourceTimer = 0, eventTimer = 0, coffeeTimer = 0;
-let p1Speed = 1.5, p2Speed = 1.5;
+let p1Speed = PLAYERS_SPEED, p2Speed = PLAYERS_SPEED;
 let p1Boost = 0, p2Boost = 0;
 let currentRound = 1, p1RoundWins = 0, p2RoundWins = 0;
 let pendingRoundTimer = null;
@@ -146,11 +179,8 @@ function create() {
     facing: 'south'
   };
   p1.sprite = this.add.image(p1.x, p1.y, 'char_south').setDepth(10);
-  p1.sprite.setDisplaySize(98, 98);
   p1.sprite.setOrigin(0.5, 1);
   p1.sprite.setTint(p1.color);
-  p1.runCycle = 0;
-  p1.bobOffset = 0;
   p1.currentTexture = 'char_south';
   
   // Player 2 (Green startup - bottom right)
@@ -165,8 +195,6 @@ function create() {
   p2.sprite = this.add.image(p2.x, p2.y, 'char_north').setDepth(10);
   p2.sprite.setOrigin(0.5, 1);
   p2.sprite.setTint(p2.color);
-  p2.runCycle = 0;
-  p2.bobOffset = 0;
   p2.currentTexture = 'char_north';
   
   // UI
@@ -625,18 +653,24 @@ function drawRoundWins(base, wins, color) {
 function startBackgroundMusic(scene) {
   const ctx = scene.sound.context;
   if (!ctx) return;
+  const patternIndex = Math.min(currentRound - 1, MUSIC_PATTERNS.length - 1);
+  const pattern = MUSIC_PATTERNS[patternIndex];
+  if (!pattern) return;
+  const beat = pattern.beat;
+  const maxVoiceLength = Math.max(...pattern.voices.map(v => v.notes.length));
+  const percussionLength = pattern.percussion ? ((Math.max(...pattern.percussion.steps) || 0) + 1) : 0;
+  const loopDuration = Math.max(maxVoiceLength, percussionLength) * beat;
+
+  const targetGain = 0.4 + patternIndex * 0.15;
   if (!musicGain) {
     musicGain = ctx.createGain();
-    musicGain.gain.setValueAtTime(0.0001, ctx.currentTime);
-    musicGain.gain.linearRampToValueAtTime(.4, ctx.currentTime + 2);
     musicGain.connect(ctx.destination);
   }
-
-  const beat = 0.35;
-  const melody = [523.25, 0, 587.33, 659.25, 0, 587.33, 523.25, 440];
-  const harmony = [392, 0, 440, 0, 349.23, 0, 392, 0];
-  const bass = [196, 0, 220, 0, 174.61, 0, 220, 0];
-  const loopDuration = melody.length * beat;
+  const now = ctx.currentTime;
+  musicGain.gain.cancelScheduledValues(now);
+  const currentValue = Math.max(musicGain.gain.value || 0.0001, 0.0001);
+  musicGain.gain.setValueAtTime(currentValue, now);
+  musicGain.gain.linearRampToValueAtTime(targetGain, now + 2);
 
   const schedulePattern = (startTime) => {
     const baseTime = startTime + 0.05;
@@ -648,7 +682,7 @@ function startBackgroundMusic(scene) {
       osc.connect(noteGain);
       noteGain.connect(musicGain);
       noteGain.gain.setValueAtTime(0.0001, time);
-      noteGain.gain.linearRampToValueAtTime(amp, time + 0.04);
+      noteGain.gain.linearRampToValueAtTime(amp, time + Math.min(0.04, beat * 0.4));
       noteGain.gain.exponentialRampToValueAtTime(0.0001, time + length);
       osc.onended = () => {
         osc.disconnect();
@@ -658,42 +692,36 @@ function startBackgroundMusic(scene) {
       osc.stop(time + length + 0.02);
     };
 
-    melody.forEach((freq, idx) => {
-      if (!freq) return;
-      const t = baseTime + idx * beat;
-      createTone(freq, t, beat * 0.9, 0.05, 'triangle');
+    pattern.voices.forEach(voice => {
+      voice.notes.forEach((freq, idx) => {
+        if (!freq) return;
+        const t = baseTime + idx * beat;
+        createTone(freq, t, beat * (voice.sustain || 1), voice.amp || 0.04, voice.type || 'sine');
+      });
     });
 
-    harmony.forEach((freq, idx) => {
-      if (!freq) return;
-      const t = baseTime + idx * beat;
-      createTone(freq, t, beat * 0.85, 0.035, 'sine');
-    });
-
-    bass.forEach((freq, idx) => {
-      if (!freq) return;
-      const t = baseTime + idx * beat;
-      createTone(freq, t, beat * 1.1, 0.06, 'sawtooth');
-    });
-
-    const percussionTimes = [0, 2, 4, 6].map(step => baseTime + step * beat);
-    percussionTimes.forEach(t => {
-      const noise = ctx.createOscillator();
-      const gain = ctx.createGain();
-      noise.type = 'square';
-      noise.frequency.setValueAtTime(40, t);
-      noise.connect(gain);
-      gain.connect(musicGain);
-      gain.gain.setValueAtTime(0.0001, t);
-      gain.gain.linearRampToValueAtTime(0.08, t + 0.01);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
-      noise.onended = () => {
-        noise.disconnect();
-        gain.disconnect();
-      };
-      noise.start(t);
-      noise.stop(t + 0.25);
-    });
+    if (pattern.percussion) {
+      const { steps, freq, amp, decay } = pattern.percussion;
+      steps.forEach(step => {
+        const t = baseTime + step * beat;
+        const noise = ctx.createOscillator();
+        const gain = ctx.createGain();
+        noise.type = 'square';
+        noise.frequency.setValueAtTime(freq || 50, t);
+        noise.connect(gain);
+        gain.connect(musicGain);
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.linearRampToValueAtTime(amp || 0.1, t + 0.01);
+        const decayTime = beat * (decay || 0.3);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + decayTime);
+        noise.onended = () => {
+          noise.disconnect();
+          gain.disconnect();
+        };
+        noise.start(t);
+        noise.stop(t + decayTime + 0.05);
+      });
+    }
   };
 
   schedulePattern(ctx.currentTime);
@@ -716,8 +744,23 @@ function startBackgroundMusic(scene) {
   });
 }
 
+function stopBackgroundMusic(scene) {
+  const ctx = scene.sound.context;
+  if (musicTimer) {
+    musicTimer.remove(false);
+    musicTimer = null;
+  }
+  if (!musicGain || !ctx) return;
+  const now = ctx.currentTime;
+  musicGain.gain.cancelScheduledValues(now);
+  const currentValue = Math.max(musicGain.gain.value || 0.0001, 0.0001);
+  musicGain.gain.setValueAtTime(currentValue, now);
+  musicGain.gain.linearRampToValueAtTime(0.0001, now + 0.6);
+}
+
 function endGame(scene) {
   gameOver = true;
+  stopBackgroundMusic(scene);
   const winner = p1Progress > p2Progress ? 'PLAYER 1' : 
                  p2Progress > p1Progress ? 'PLAYER 2' : 'TIE';
   const winColor = p1Progress > p2Progress ? '#0099ff' : 
@@ -851,13 +894,9 @@ function restartGame(scene, resetMatch) {
   setPlayerFacing(p1, 'south');
   setPlayerFacing(p2, 'north');
   if (p1.sprite) {
-    p1.runCycle = 0;
-    p1.bobOffset = 0;
     p1.sprite.setPosition(p1.x, p1.y);
   }
   if (p2.sprite) {
-    p2.runCycle = 0;
-    p2.bobOffset = 0;
     p2.sprite.setPosition(p2.x, p2.y);
   }
   if (p1BoostText) {
@@ -889,8 +928,6 @@ function setPlayerFacing(player, facing) {
 
 function updatePlayerSprite(scene, player, dx, dy) {
   if (!player || !player.sprite) return;
-  if (typeof player.runCycle !== 'number') player.runCycle = 0;
-  if (typeof player.bobOffset !== 'number') player.bobOffset = 0;
 
   const absDx = Math.abs(dx);
   const absDy = Math.abs(dy);
@@ -909,17 +946,9 @@ function updatePlayerSprite(scene, player, dx, dy) {
   setPlayerFacing(player, player.facing);
 
   if (moving) {
-    player.runCycle += (absDx + absDy) * 0.35;
-    const hopPhase = (Math.sin(player.runCycle) + 1) * 0.5;
-    const targetBob = -Math.pow(hopPhase, 1.4) * HOP_HEIGHT;
-    player.bobOffset = Phaser.Math.Linear(player.bobOffset, targetBob, 0.45);
-  } else {
-    player.bobOffset = Phaser.Math.Linear(player.bobOffset, 0, 0.2);
-    player.runCycle = Phaser.Math.Angle.Wrap(player.runCycle);
+    player.sprite.rotation = 0;
+    player.sprite.setPosition(player.x, player.y);
   }
-
-  player.sprite.rotation = 0;
-  player.sprite.setPosition(player.x, player.y + player.bobOffset);
 }
 
 function playerHasResources(player) {
