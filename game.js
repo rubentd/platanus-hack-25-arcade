@@ -30,6 +30,96 @@ function setPlayersVisible(visible) {
   if (p2 && p2.sprite) p2.sprite.setVisible(visible);
 }
 
+function addText(scene, x, y, text, style = {}) {
+  const merged = { ...style, fontFamily: FONT_FAMILY };
+  const obj = scene.add.text(x, y, text, merged);
+  if (obj.setResolution) obj.setResolution(1);
+  return obj;
+}
+
+const DATA_TEXTURE_KEY = 'data_cylinder';
+const SCANDAL_TEXTURE_KEY = 'scandal_square';
+const LEAK_TEXTURE_KEY = 'leak_drop';
+
+function ensureDataTexture(scene) {
+  if (!scene) return DATA_TEXTURE_KEY;
+  if (scene.textures.exists(DATA_TEXTURE_KEY)) return DATA_TEXTURE_KEY;
+  const gfx = scene.make.graphics({ add: false });
+  gfx.fillStyle(0x00bfff, 1);
+  gfx.fillEllipse(32, 14, 48, 18);
+  gfx.fillRect(8, 14, 48, 34);
+  gfx.fillStyle(0x0085ff, 1);
+  gfx.fillEllipse(32, 48, 48, 18);
+  gfx.fillStyle(0x4de7ff, 0.8);
+  gfx.fillEllipse(32, 12, 30, 10);
+  gfx.lineStyle(2, 0xffffff, 0.35);
+  gfx.strokeEllipse(32, 14, 48, 18);
+  gfx.strokeEllipse(32, 30, 48, 18);
+  gfx.strokeEllipse(32, 48, 48, 18);
+  gfx.lineStyle(1, 0x002b5b, 0.6);
+  gfx.strokeRect(8, 14, 48, 34);
+  gfx.generateTexture(DATA_TEXTURE_KEY, 64, 64);
+  gfx.destroy();
+  return DATA_TEXTURE_KEY;
+}
+
+function ensureScandalTexture(scene) {
+  if (!scene) return SCANDAL_TEXTURE_KEY;
+  if (scene.textures.exists(SCANDAL_TEXTURE_KEY)) return SCANDAL_TEXTURE_KEY;
+  const baseKey = '__tmp_scandal_base';
+  const gfx = scene.make.graphics({ add: false });
+  gfx.fillStyle(0xffffff, 1);
+  gfx.fillRect(12, 12, 40, 40);
+  gfx.lineStyle(2, 0xcc0000, 0.8);
+  gfx.strokeRect(12, 12, 40, 40);
+  gfx.generateTexture(baseKey, 64, 64);
+  gfx.destroy();
+
+  const rt = scene.make.renderTexture({ add: false, width: 64, height: 64 });
+  rt.draw(baseKey, 0, 0);
+
+  const textObj = scene.make.text({
+    add: false,
+    text: '!',
+    style: {
+      fontFamily: FONT_FAMILY,
+      fontSize: '40px',
+      fontStyle: 'bold',
+      color: '#ff2222',
+      align: 'center'
+    }
+  });
+  textObj.setOrigin(0.5, 0.6);
+  textObj.setPosition(32, 36);
+  rt.draw(textObj);
+  rt.saveTexture(SCANDAL_TEXTURE_KEY);
+
+  rt.destroy();
+  textObj.destroy();
+  scene.textures.remove(baseKey);
+
+  return SCANDAL_TEXTURE_KEY;
+}
+
+function ensureLeakTexture(scene) {
+  if (!scene) return LEAK_TEXTURE_KEY;
+  if (scene.textures.exists(LEAK_TEXTURE_KEY)) return LEAK_TEXTURE_KEY;
+  const gfx = scene.make.graphics({ add: false });
+  const dropTriangle = new Phaser.Geom.Triangle(32, 6, 16, 34, 48, 34);
+  gfx.fillStyle(0x7fd8ff, 1);
+  gfx.fillTriangleShape(dropTriangle);
+  gfx.fillCircle(32, 38, 16);
+  gfx.lineStyle(2, 0xffffff, 0.7);
+  gfx.strokeTriangleShape(dropTriangle);
+  gfx.strokeCircle(32, 38, 16);
+  gfx.lineStyle(1, 0x2a8adb, 0.6);
+  gfx.strokeTriangleShape(new Phaser.Geom.Triangle(32, 8, 20, 34, 44, 34));
+  gfx.strokeCircle(32, 38, 12);
+  gfx.generateTexture(LEAK_TEXTURE_KEY, 64, 64);
+  gfx.destroy();
+  return LEAK_TEXTURE_KEY;
+}
+
 const gp = `data:image/png;base64,`
 const toData = (payload) => gp + payload.replace(/_/g, '/');
 
@@ -40,18 +130,26 @@ const CHARACTER_SPRITE = {
   west: toData('iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAABXUExURQAAACgHDj0VGWM4M1IxLe22mHJKTJVkX+rf4bCPkridpcSxuLtxVPvfzPfQuumUZ_v4+CoTOdeVgPrJqYwmEfmtdKuTxtt5RtBlMN5nIpR1eaSDhgAAAEgX11gAAAABdFJOUwBA5thmAAAAAWJLR0QAiAUdSAAAAAd0SU1FB+kLCQMyNtfL4cAAAAEBSURBVFjD7dbRbsMgDAVQ7ACBtDRuWRdW_v8_Zyp10159pb2U++4jHMUY52Zm3iCkAcp58Ro7QT7EcQQrQf55gGcsAo3C9QUYBPZKBB+WYBRG878xAYkwIG8nQgDnAp3pp94ElMtOECDXcqNXDECVqwRK6QMDRO7WkarlU0I4ym4eyV1KrfUCzPRd64+G3Alr+2rtvLIZcHSIyPaIZoCT1ku0A1lSz72be2CtF8ndfi2OehE7wFqsQASA00NbsAMkWYHN_h_oKMFAFGFgvTHHviGAozFPwCw4VmCHNnQLFVrx4zNAAC3IC2EAZNzufwQEiBEDKCxYC8TgQ21mZubf8g0eiArBSRiIZgAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyNS0xMS0wOVQwMzo1MDo1NCswMDowMFjZzgkAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjUtMTEtMDlUMDM6NTA6NTQrMDA6MDAphHa1AAAAKHRFWHRkYXRlOnRpbWVzdGFtcAAyMDI1LTExLTA5VDAzOjUwOjU0KzAwOjAwfpFXagAAAABJRU5ErkJggg=='),
 }
 
+const HQ_ICON = toData('iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAJ4klEQVR4AeybeWxUVRTGz2CMwtipAkUQWhSoFCgKomKKlbqU2lYC7rjVCK5RURLjUk2MooJ_oXWNiApKNC4JDVJwjYqMCyIJiKgFcYmKIKIVJK51fhfP487rmzczfa8wCsbvnXPPve+++5173zn3vimdZDf_b48DdvMFIHtWQC6ugDXLv2+dVHdt684YW86sAEgrlPjOcMIud4BNunHhPOXuSJwAHEPIyi5xgJJGwgfiE6+aJI0L5lP0REc5Yac5ALIKGMY_eAch6YgveS9u2nHBCQA9LHS4AyC9_M3PnYDGbDP4R5941JBHB38MHCYA3Q2cANQephNCdwCEbdgz7TXb67v0dojXVo1Tjo78KVoiAIPbCWE4IjQHKGkGyiz_0rJVkMz0NfWTMRu4Z3lg6WCBODANXJejRo8wFi8nUBHUCYEcoKSRDAbCRiaCGaTtoAbx_KMrpXt+AU0MsPXqXSilfbfDGD0u1ceVGytO6NG9h9FZDYBCECcEcgAPBxBnec+cPYuiAwgClvk5p50rI48pM3AaZKHEunUW4L6lee0atymrcmAHQFxnWmeHEUB86OAjBFRUVUlR965mpqlLhVg0mqqqjZ3VgHHDDxsQ7UZgB+iTIQy0zFKvObZMgNqQsWgyyRmX10hl6f4Gf6xYTJMk9Ni0Tjr9uCrJRoHXAifYTseeDu76UBwAcYIYcD_Ar_xqwy0Sf32lVFedYaAryb5H3_OxJX1ss9G9XglTkcUlFAeUxPr6Lu9Us_xww2yZevdtZrg4EZiC64ITln74nng5wdU062IoDvB66jNTLzPLmuX9wtOLzAwz0_Ysq052YPUAd18sc8C7vuDl+VLcf4C7SaByhznAJs1egFFC1J5ldGyTzj475QpiH8BSxwn0wWpAvrNwplx2_BGogRDYAQtfel7uv+MCWft6o2x+e5EzGJs0abDk1IkCUdKh0yihsA9ICN__Rw050qRAnGAHPdJu0BUR2AE60yxn3lNlwuxCuvLESqlIpEHNBi1bt2qTrCUrQW_CGei6ItDbg8AO0JmGMMtZB6FpkPyvtlSSOAFqe3ZL1aSNPefSIEubnV6bkfoYSINkCF1FbJ_dzZub5nruA2hnrwjK7UHgFcBDSYN+M339iaOcjFDU8g23GChxVhErCJgK14VlPiz6+383DXIkrv53swNZ5ac6xEmBQOtU8q6DFatXyf8iDdpxAuIA4pwIlbQtNQ3+XTTcmFkNKKTBMDZGgV8BOw2+3LB9V8cAdXYhTBocM_lWkwbJCtQrOCylIq9tSIPorAQ7DYaxIgI7QN9j0iCDVDCzpEECY0UiDSpJvzQYiyYflLQvlXbQwxnYdUWgtweBHcBMQ1ahg9A0qMTVHoumJunnHL1fJWmQ18JeEVqXjQzsAB4G2Rsuvcp82qKcKTQNsgcAdobQPjgOd_1rvRZDl6E4IN2oyPUQBPaZX1+fao8MoX2yxHnXe_76TbvSoPaTSnaYAzI5DfL6MDB9fZCUbfCug5w9DZIFlGzntR86Y7dnV4mSEYA2gjBldpGAdKh1Kv3SYKevlgc+HgdeAfHEFx0la2cCSEMQbMnPE9IgKRAoOSSnQXaRgLIXNA3aQY9VQVteEWR7EdgBfNGBLCQhqwNhZsnxzOyRJ5xpzvt+JPW+TCVZACfkRBaAOCTdS5gjcJik3c6x9wXuukzLgVcAD2KmIYueLewMYccQ7Yc0uHZpoxZDl6E4IN2obJI1vXec+Z+8+uq0X4X1hw_2_SDds7Kt7zAHaGYg92uQJN_zQ4oOEp0YQpmYAdBtfLatq4Clia_C7Af0E5jXbwX2fZnqgR1AGmSGW1a+K_YShqyCIMmBiFgBdHDo2CHOmQFonUpNg7TDplEfmRNp0CZpp0EGy2EIQLTu4ouFjOAOlBWJgxIfS91nBu5X5HQaZJAQhCigDJjVosJC89MYZwUIkhFi0dSHIe7LFDmVBvkkRhaAsE0A0nY5bD1n0uDefXZEdi+S3Vu7eJnFfRr0+ipMGgwr4HkNIuMgePcrA1sVXh3ZNgKjnQX44YRsULpPRCZV9DNNaWNnh+rEidDrqzDBDhDwynt1Trv31zEizYPSXDJygN3ZxlV9pezMEc4fPT12_yzhqy9ZYMKhReZx_OgJITdIe9hohCQ7oBNDFJRtsN0F2HAEQOebIE7RtIiNcTUvLkQ1uO6eMc44jcHj0snDlmSCPJ0CKuJLNiEcJ0AKQAZJpWYDJYXkMKSgDcBO4NTs4M4QtKkt7SqkQg5COEL3_uhAHQJ52n+8ejNCGG_BkC+F8RtDiktaB3BfcfnXQseNj+xHsQ2UCGT446ieBQXmL78gBDnNAgTFWHRHFsBO4CQ7UNem438NGkPsoEcWoFodgq5gnIxXy37S1wHqVTr060TPApDJi0Xl8aceMgFuSu1Q887b8YAY0Ks4X4gBM+omyLoFc2X+g9MN0KfNmCbgpik3CeC5BEHef2Av+UOGFfnGBB238qAvN3wdQGPtBB3MqW8SBeV772qQK44aZn750RiAPR2+a_45XRPf+q1fxGXwn1ucNoM6l4vCMSYU9_gTpqT_fR0Qf25ZJKm1R4EZP3TEQU5N_W03ykXnX5EWxAvAYcdG06JGAeVVxwhA94LzwAwUPx6+DqBv9811d9XIgOEHRgADBAP6DRKAvn7jRlkcf8MX9NvcvEq8kH9AgWQCnmE7ZtaceyKrty0WQP8K9_jVrjKtA2hIJ6DPt78JEhuoOXkcQvIOH+NA31HbRiN32W3T+lEjywRQD4j0ZACA_vPmjaa+tU+5AHUWbRkb0HGiY_dDRg7QDoYOOFhVIweXDDKyW2GB+SMICvvndzMziF5RVWXsn943wUjKLZu2SV4sn2oDbAoM9AnQAZFfD0PoxcVDMAtZgLIpBLhk5QC_55ABqD__jPOE1IRTSktKhKPyXrW3GkkbIvfo8gqaJoGzBPckGXdCIZADxlWPN0MknxvF4_LZsm9NfLCrTj_nZJn70TjZb+8WY8ZRKPRDnyeMqqSYEXB2Rg1TNArkALtPNjJeM2hnCH49vnP6FnkgfqE8MLVJDum_TFZ+vP23BM4J2h+ZRfWOlp4OmDNzXquCf+ygOGVig6iOZNfX9Nxrcvv4sdL3t1_lwQsnmvGyN0Avz9vXlNd8vtpINj8ju0yXK8tmy5xpKwz4Lsh3wnVffyWTjy8TJKi_rl4OGzRE+MsQcj4SaJDVzRFlgiZ_Ma7I63+SoJ81_iLzr8_QFWYg1sXTAXWXjI8oho_uFwkCXgE_nDJhrAC+Ddq44eYpnqmUdJcpnp33eMTd1uJuVE8HmJqQLumc98mn70fAW0tejNj4bsO6iBdCGpbTTYc7wHlSjip7HJCjE5PxsII2_AcAAP__iPVyWQAAAAZJREFUAwDsiSTMpxXa3AAAAABJRU5ErkJggg==')
 const BUG_ICON = toData('iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAHD0lEQVR4AeyaT2jcRRTHZ5tqsomU0krRaqAtYgW12EaspF7ECFKNgiAFqQfRa0G8CepBBC_iRY+KB3sRih5qi2BLqdhgCxapijQejAQbkDYNpbqJcVnzmc1LHrPz+ze_+bULWfG7M_PemzfvfefvbrrOrPH_egSs8QVgeiugtwLWOAM3ZAs0R3e34Pmpu3baknoSxKZ54ECmbZKPIvLKCSChxl9z5vHbt7W+_vNiLSs4bLBt_HDO0DfLvqy+cgK+fHinGZ9rmVOXp2p5g8WWPnfO_ZO3S7BdpQQwg7NTl4OD29rqsysn2EGOjpUSwPh33DdM0bWolAD286tfTZgTT+ztmEkOxuv3bG8B98DjDNjWaJqJQVNo64SwXCkBBPTp39M1TQLJ2YSH7zX1kUcssIMItgz60eWtz1mArkpEJ4Ak3ICn6n1m7ORZK2Y11A5_ZoAVLH9Axgu1dubMPH2WVSuFz_eKMrASlQBm79hjD3WEIjN5dGPyRXB84ozZUlu9+qWPdoZvxtCysvWoBBzft2tlpnVgzBwzzywjbx18yQDuekDyyAXsf1+iT3_3o3mgnkyi9E8rXV1UAlzn0l5YWGhXpycNCQOSPrWwaEBbacwHjfWG_c_1J7Kqy6gE7D9zwbDMmXE3cM6Ascmr9lE0vvQwIlkX9GH_A+oarIiRqwvm58bqNtH60HpUAti3JMdhRsAExXV3cmbSJIFtw_bQgET6ig8IZVtADGOgi4XCBBBM2uAEeHi+z5pwtdVOn7V19rwPJ86fN2wHDTp8csu83Q4vDw232ELcCvhGl4Ss2Hz9ChHAAATjc6RlBNrf328Gf71oxSRuK56P_aP7OqScC1uG6uaNrTXz_Kb2ksdnh6EjIDZZNY4qsbkuUeNRMIBH7BVxZZE4EAPufiDttBIS0vSxdIUIYFD2ahbLvPTcRN02vrLQd_+D1uTgQLPjKW0V6oOYiE2JclULEcCyfvtoe08neW8892yLZN2Z1_bodTupzvkwtmePeXFkt8lDQlZsvnEKEYCDN5_cReEFM99_5Ih95HgNloWanGWRtyB5FM1ffqKwh+Kh4e3tQ8FKyn8UJoC7nquryNA6YV3HB6c_pQ+sAOSfz_9HkQq5JlONPMpCBPD1Fh+3DtTtnuRWoJ0HJA607b_zDd301iGB7whsg2ubO5_B7H0gr8c8t4UeqBAB0pFXHQcOJz2DC9Af27GDIhWSOMmlGiolthuutFe_jEdJHOBSrams81cLEwDDchhy6PB2d4cjQaDltAUkk7b0dT9d5yWo24xNDCDPQ0n3lXphAujIViAYATINEtRtEpe2qxN5SCnjUzIxIT6CCGAgBtRApiGJ6uS1vmxdj0091F8wAUkD8g1PdLLMIUMgOkptS7sKZPmMSgCHozsgibsy3S5KQld+HeY0JikOJco8SWkbXae_D2IjvwjJmD7bIrJSK4AggAz4zvhe+1qjLQFTd4GOhwuEvV5vP3KQuXbS9ukggrGB2IWUwQQwMC9CEtED8xVW2gQOvr+y3ghoo+dr7qOb28lrEtC7wN4FW4Gx+fGEWFx93nYQAQxI8u9+c8G49++hmXZSOgCuKQFySZi6wCcTna_k5J_ZOGjeu9QyH909ZF+mPrssWRAB4pSkCETaf3x72nz8zKg0vWVaomk6cXZ9dpVgeY+ILqQMIoCXoDsYRLyyOGDF7E9bWfogKY0lUer_nAtJBvjlzc9YSTZF5UEE8MsQyz9rMBLPstF69j6rSsvcuk___m_XXLPc7SACWAEE4s4E8tcmzq0MTkIrjYwKtlmz73NBDJxDPl0eWRABSY7Zk5zOWk9iuq3r3AzoAfKJpb8GUyYB3yTs6iEeuPI87SACSDTLOftVbEhQkqX8YrZmQFbC0l_7Eplb5onJ7UM7iAA6poGZcvWSLCVLFrg2aW2fzzT7vLpgAnxLkfeB7GMCzjNzaYHSH+ALO3zzhxLqGqGzj49gAuisQfL8MsMMIxeCSIB2UfDK484nefGFb65BxirqL8k+GgEyACRI_cPp32skAAlA5FkltrdtWt_xymQFZPUtqo9OgPuVmNljJgmMxCjTIDYQR980W5+uqCw6AXoFSDD8OyESok2CgLqAtgAZtr7k+bYJsImF6ATwD6J8wZEQiQkkYUrsRU6JLTIfkvz7bPPIohFA0Cz_tzYs2t8EfAcVNgIS1RA5pRs4vtj_ZX79dX1KOxoBOOQ1xhciTmtO8bQ_nJCoBv19IHmR41fqscqoBMh9zGxxXUm7TLCQhD_xQVvqMcqoBBAQq4CZArRjAF8ghi_XR3QCmHVmCSLcwcq08QnK+PD1jU6ADAIRaWeA2GWV+KgicRm3MgIYABIoyyCGj7TxKyUgbeBu0fUI6JaZuFlx9FbAzWK+W8btrYBumYnQOMr2+x8AAP__SjqybAAAAAZJREFUAwDAOpWu1IsVngAAAABJRU5ErkJggg==')
-const SCANDAL_ICON = toData('iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAFdUlEQVR4AeyaT48UVRTFi1noxrAixkCH6CQGcaGu3CioMMgCP4EsDIkrk_kE6krdaOJK3I4uNK6NxKCI_+KMO4GFhJgUiRmJElbExIUJTf86nOH0m1fd9eomMwXTJId777n31Xt17quq7ulaqHb4v7kAO3wDVPMdMN8BO1yB+SWwwzdA7CZ4_Z+_h31Cl2YWXwLnzp4dvv3Wm8PBYO+wy4R9G1MkwIcfvD_87IvPq5VPVqr19Wu9Ope6vtppPUUCPLJ3X3Xlyh_V_v2Pjie7dOFixcT9QD1eU+l_rQX4dW1tePny7xPHv37jxkiAuheYWFhB0FqAM2e+qr47_3114MDjG4dHkL7g23PfbKyrxGktAAf1kycGiNIHcGmynlK0FuCdd9_bdWzp5U3HP3rkpaoPWF1d3bVpcRkipVoLoIGDfQO594UtEuDVkycnVF5eXq5OnHhl2xHpRJEATHTw4JPjG+GpU68RZp8AJOr67tNB8X_Hnq_Ov_jcVFDDWI3BF5o4+K4oFiCd6OE9e6rFxcUJUOMcMXXYN24tVNNADWNl8YUmDr4rigXgMvD7wFPPPL1pF7CYtGt8ZoBvA8ZSh3U0cfBdUSwAE3EZYIWlpaONO4AaOsgOWPt_9tcHaqjXOHyhiYPvik4CpLugzeQP7d7dpmzLazoJ4Kus73wJ+ffmzYlLgZraboT4cG1ArYMxTTG5CDoL8MKhw+N5FxcfG1vuBdqqWEiswCUA1wYaI8sY+ViP8SPoLMDS8ePjzwT1aAcILARB0t1AfF_dBDlRgRN2wGs30HUAJ4s_C2mXiQHjsA64CDrvAE3q3XefvG58dB_AtUE9unewa7Cz0OZ402rCAqj7TJLzfTc8++XX1W8PNj8KyVFDhxEPOwvMG0FYgNruAe6zKMX4nBBi4E8DO6Vu2AGMI+eAiyAsgLqeWhaV4_igQy4Hcuo4gsmXZYx8WbgIwgLUyQ5gMSnnMflpQDTy2Db3AWqob8IsPiwAC3UwocepT34WGEMNlwwfswV1HctTBVAXQViAtLse47M4rEA8DapzSz0xVuASAYgkrosNC0C3BBYgXzbliKdB49xS77H75PjDDLYLwgLQGcDkWCGNxfOY43FH3gFHDk61qc3l4CIIC6BusAj52DSGA9O2rHLU5ZA7JlwEYQHSLuViFug8jzs4B5zXtPX9GF38sAC5TqUcC3OOOAevaevnjlPChQXIdYoFpLxzr_95rfp44dYEjvzwy+jvCVc34PXpsTymLoKwALlOsaCUdw4fERzT6tOcxxwrgrAA3g33WZTH7jflcvwsjjzgvQVsKcICeDfcZyEeu9+Uy_GzOPKAL1HYUoQF8M7iswCsI8c9MBhUDq9P_dx41ZADH50+jSlGWADvLD4rwDpS7onDh6AmAOdj3KfQY_fJCV0ug7AA3gn5WBaFdcDRdWwO5Lw+9RmT4+DBjz__hClCWAB1g1nlY9NYHPw0UNcExqU5OEfpLggLkOuIcyzOY57_cDmQUy15+bJNHLxQugvCAuQ64hwL85hnPycK74Ajp1py8mWbOHiw_tc6pghhAdQdt6zAY_nwly5crPjUxwk7OHnVYanFzgJ1Aq_J8LpOyWUQFkDdccuCPJYPzzc+Yk7YQQ5eSGPxqaXOkXuPyfOpHxYgPeB2xX7i3Afa7oKwAGxRThoL3G8TpzXp+DRPDFSHBWx_t_htEBaALclEWOB+mzitSceneWKgOqygXVByMwwJQCf6Ap28xNCPt4qbbFCAuy9C1aNfc7YLvMWqS4D3BVdWPh3_ct100s6HBOjLa7KcUOmJMwaEBODt0b6Ak+mCkABdJuzbmLkAfevIVq9nvgO2WvG+zXfP74CooLcBAAD__24cXBEAAAAGSURBVAMAVkdb+bD_bnIAAAAASUVORK5CYII=')
-const LEAK_ICON = toData('iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAADA0lEQVR4AeyUv4rUUBTGR59BbRQEX8NGOzsrO19FG5_B0s5CrLSz08ZyQbBwK2FBQdx9gi12l9_At4QwN7mT8+fesDPwzUluknPP9zsnub254b8DgBs+AJumE_Do1fvLF0fnly2b0BRAS+Pa+wBAJLIj4__w8ZPttk+__Gn2GjSdgDt3720BtPxrAmDYfcwDotUUNAEg08TWSgcw7r4AtJqCdAAYxiyxB6UCKHVfIACT_S1IBYBRTBJ7URqAue4LCIAypyANAAYxR2yp8d4pAGq7r+IAlTUFKQAwhilibwoHsG_3BQhgGVMQDgBDmCH2qFAAS7svUICLnoJQABjBBLFXhQGwdl_AABg5BSEAZJ7iZcQSyRMFIQQAZima2LvcAaj73sYBGjEF7gAwTrHENcgVQFT3BRKw3lPgCoBCKZK4FrkBiO6+gALYcwrcAFAgxRHXJBcAWd0XWEDXToGeKUUXACSnKOLaZAaQ3X0BBrjHFJgBUBDFENcoE4BW3RdowFunwASAQiiCuFaZAazVuOo+ABCJfWPN+__8fjxfXkHLd8BUIZvvC663+00AejOzpJ5wABmvwRLjeiYcgDbqNaYAYAqk3kCEAcBwb2Z31WMCcPTp466ck2veYM5O_0_uN3dxMYDfb17emkr++e9F8bIXBOX5+uzBdS3FTQsXFgMo5EtblnnrhmYAJ8e_rDVsn8cQ2p7M_Om+dz_+zdw5f9kEgNfg7PhncZe51wAjkpJwruOaaBl_8psAkAAt+RjyXK2AMhTPeXSfPGYATAGJSmIKUOn6rvWx2V33sGbtPjnMAEiCoqYAGOQfyqv75HQBoCmYgsAUIDa1SOY9uk8dLgBIVAOB+yzyNk8tbgBIFgkhwjw1uwIg4RDC1CvBvTXCOGLkUc0z+9zjDoDNgYA4BgLiGNV+BzCNeCbCOHlRCAASIyAgjoEgvX77YSNzXEOcD8UaxhHHUQoFoKKBMBTrJ9+_bQQC46xhdijWopUCYGxiCCPb8LiWJgDGRbQ8Xz0AK7wrAAAA__+EvNZVAAAABklEQVQDACgcEZBlDgb_AAAAAElFTkSuQmCC')
 const COFFEE_ICON = toData('iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAADlklEQVR4AeyXz0tUURTHzwRtpEQzyxIMNSFXli0isUU_Ny2jP6B_w1WbgnZCmza5kWgRCRJBYOZCG6PIXwgaqemQOmkW_WAgCorPkxOvx+S8N855DjNX+My79865953v9577nrNLyvzPGVDmBSCuAlwFlLkD7giUeQG4h6A7Au4IlLkD7giUeQG4t0DZHYFgxcdmwJ1bt39HIZioVd_cABXtFzCcTEouss3zr1GotqkBiPAnml5NC7Q0Nomf+oN1Xph_bGF+wRsLruENFvDD1ADNE9Ggfa6ZTEYU+vD23aZo2nFhagBljpC6Q5s7TFupqKgQ0D5VAJjCWMfpTqk7cJimKWYGaOluZcL_lB1va_e+So6OCEdB1_IGC_xhYkAwYUwAKiFIU3OTKBcvXRaYmBwToEIAzcE1GSsEJgYgNltyjPvhuQDsMvHz8zMCtIMQFxwrRN_EABJDKGea9nagYqzEk5eZASy+_CEtmMDrjX42eOhpmev3iAb6luJZ38SAe_33EywOmMDrDSP8nOnoEERy_rnyxIfzF85Jc3Or9_8C8zGI6_XuG3_XpF8oTAwgOUzoXE3S9MAIP5x7P+m1FYHBp8_k+ciQNwfxjRN9YiWem5gZwOKACUA7Ci3Tj6VtYUjOnjoaZVrkWHMDNCNM8MPOKgjdO3BXFMSfbK0R0PlWV1MDBn7u3jLvyspqAYQG0YmjiSptmlxNDajaVymYAFGzRzjU1u6POvWf+FwdUwO4OSYAJiiMZwPBCsIhW1whx8wN0GQxQVEjHm58F+gaWRKEI_j9+mfhqvOsr7EZ4BeiRpw41iBKnKL9ueyIAf4EdrptakDP4FhipwXmur+pAbluHub7nr7BMGF5xxS9AX3jc6ZVVPQG5L21IScWtQHr6x9Dysg_zNyA6dk5gagpcvYfDU9GnRY53tyAl8tfE9fqqz0TchnBjo_PpgTxDZlfYn3+ccvcAG4CmACYoCBWQTQ7frPziMDVdtufweQEsRjALz5uBpigXKnZI4BghZg4icWA3qlUJE2vZzbkwdhcpDn5BsdiwJO1T4n+xW8CWyXa92JFYOnLD+l+s2j6_tc8YjGAm2ECYILSO5WS3qmUJxrhxHW9mkkA7XyIOic2AzQxTAiCYEXj4rrGbkBcwsLexxkQ1qlSjXMVUKo7G1aXq4CwTpVqnKuAUt3ZsLpcBYR1qlTjXAWU6s6G1eUqIKxTxRq33bz+AAAA__8Ptn4QAAAABklEQVQDAH6+u5AFfIvsAAAAAElFTkSuQmCC')
 const FUNDING_ICON = toData('iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAEgklEQVR4AezYv6sdRRjG8Y12QaLcStQiEARTWFoIgo0ELAOCnY11LKy1srdQ2_wDNgEbQStBsLAKSUhICEmRhFSXJMWFQMJNPgtvGIad3Z3dc+49YTfwvfPOO+_8eJ6Zc26SN5qF_1kNWPgDaNYXsL6AhTuwfgQW_gDWL8H1I7B+BBbuwPoR2MUH8POlHw9TtnnGnXoBIZrgTz8_3UCc5vU3yU4YkAokGiFSDP20Tn8K+ZxjNSAVRCTyA0Y_HTMv8nPbYzHgzh9fHcLhCYN4CHVQxwSI53CkBhCN98983OD8m9ebd__9s_nvn7udlIQxAcbnmnAkBhANouHgEIMRkEsJY9JcGjMBP1y80P7WSMfGxls1wO1c_v3rQyJROlSMdZlQmpPm9_beabv2a4OKH1sxwEHgHAdfnGvu377yCrkumAAmoKsmz6Uv5O69B83VazfyksH+Rg0gGnb1NCF++NmXzaXnZ4WtEW1Q+MEEQ0xArCEXpML39x81xBt76+1Tmio2YgDRsLMDQ4z0sExAvAjjXTABxuJLUpyuRTSeHBwYmswsA4iG3YmGOHDgiNOWCfqM0JZgAryEWItolObU5icZQDRsRjTENTABJRPkg6ePHrfPvE_46Q_ea365cPFEzRnUVhsQwk2eIty8lDCBWHktxE9fCoe4BOEw_t2v3x5qa6g2wC3AJp4lxF0MGWQc8SX5281n7TJEo+0UfhANw84DcS3VBsQGNvQNrM8EiHMILKHWPIitWSPc_uaYO5XJBtjQN7ADOIh+CBEPoRbqrAFxH_mN27+vfszYLANiAwchgBFEIcby1hjk1Zsn7uP_vXPN2Q_PNGPr+9bKx6oN8E176uTJfJ2232cE0VBINNTrD_HJ_l_N9Vu3m6F6Z8vXGupXG+Cb1t+9PUd0beCgBLoxoqFOX168KZwhcLbadasNsAERENt86EWoI54x4i6sg66xrpxaGHMWiGuZZEBsYlPC4kVEvqstiScC5lhP24daqLH3mDlqS8wywKKExSEcDPJDqIM68yHuI6+3d1_9mLFqA+IQ+eIEQF4NxDnykB97gzv1W+D78z+dIKD0uWcCCFSnDaJvHGNvcMxvAb8BEHuNbatfQHzTDn3uCXTDIVqrLz_2cGPqiMaY2q6aagMsQgTEhJVegxuOOq2+OV1YB55713ieIxp5vrY_yYDYhCi3OvQaor6rJRrGrOe5i0sQjdJ4bX6WATZzqw7OCEIgP4Q6qDMf4hJEozQ+NT_bgNg4jNAnDOIcecgzbUi4uo+++bv6PzrMG0O1AW4BpcUJgvEQKkb0jYNp8iUIR2l8E_lqA2JTJiD6eUugGw7RWn35vDbvE408v43+ZAPiMH0muOEQrNWPeXlrHRyV8Nh_tgEWcnCIazEPtfM2Vb8RA+IwhCD6fa069NVMGauds1EDYnPCEP20lUeaO854KwaEoFSoGDG2K+1WDSCSaP+AEu8iWzdgF0WnZ1oNSN1YYry+gCXeeqp5fQGpG0uM1xewxFtPNa8vIHVjifH6Al73W597_hcAAAD__2Xv1_EAAAAGSURBVAMAFjHsn3TC3r8AAAAASUVORK5CYII=')
 const COMPUTE_ICON = toData('iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAH9UlEQVR4AezYza+eQxgG8KnFKTb8AYSgGiQkCM5CGhaISCSiSKo0WKASSioRia2E+Ep8bJBGdUFFaCiJkJTKsUCoIPT1pg1bohvVszme35NzP5mO5_067fl429P0OjNzzz0z93XdM_PMOSek4_zfsgDH+QZIyztgeQccAwqctPLkmbnSGOsjgPiKFStmTjv9tLnyH887AHE46+yz0vnnXZAmJiaS9lxUOGEugxZrDJIyjjjkcWjrz23D1MdCAMSCuIz3Ivbv9MFeXT3tS1oAxEF2+xEPdidOnBTVocslKQDSgDhMTk6mSy6+uEEvdnyN69XfZl9SAggeEFl3+7qEOExNTaVvvv22ATHY2wiNalsSAiANiK9de3Od6ddefzXt2rWrxk8__5hyEIMohICctDnMldv61RdVAIGCoEFWkdu6bWsdc+e3vfUnru38E4Qf_1KEevCQPxZFAKTjVkdcrMhve3NbnWntAKJRbyv1E8H4tv7SVrYXVADEAWlZffDBh+p4BG9Lh11f3ZH9CJsyz7j29PR0mj50qPE2j3UaQ5_KggggGBDYezt2pGefez4F+YhNJgNsiCnbMPXVV4eZHRXHgZCHdQzRmFcBkIac+MObHkogthdeeL6+6WVfO0AIWW0TgR1hvm397GBNa6v3w7wIYGEQBGzYsKEmHcS1Dxz4u4kL4aYxW0GSPSd5ztmrEjsXdWLw0QZC5rtgmJfhURUAaUAaBAWnnHJqveVte9DesmVLnX2fOj4IBYK0EqHAmjVrEh_+fgEKMbT55mKwDfMyPCoCIA1Ig4BdVEqw1UsIMIAUMhA2hIzVXnvLrQnUiaCvJKuvhFjEVdrz9hEJYPL4nLW93GxJQATyhfN6Tlw9JxfEH9h4fyNCjJVhYkDYRi3nJADiQOH169YPfLkRAYgAg4JEKBdh+9tvpRdfejl9+ukn9VB9do0_hLgHgE1n_jnUFqNY1dswkgAmioybGBmPEJ8gk8ues4mAdg4Bxnl3PPK+qBsHfBFk37b1jbR69eq05_vv0l9__sVUw1o5GI2ZWLlSdWgMJQDigLQAzY48QoLVDpTtsCsF7I0vSOPrXXHFFSm2Mp8Yz1c_2w979iSQXTZE2Uu4H_SXdnGLv7Rr9xXAoDzjBkAEL0jBAHuOEOr6665PZ55xRtPFlwiNIasEeSZ+Srsrdpk6W+yyWCNKfaOipwDIU66cHHmLRLBEEFAErK_Er3v3Nia+GkRwFJDzG2DMp89c_EqbPjZnHrT5sinbss+n+1tX0YqeAvR7RJQLCaBT_ebmQixX2bd_f_N4KcV0FMIfgagrQ2h1ZAmiDtaCWNdY219fDv3divzBQ_+sgLwv6j0FCIe20sSlHTlbVBl9AgtfdkSizYeQsQtKAu4XPtCpxDVWvYR5J6t7xFzRZw2YmZnpSTx8DxPAtg9wMIkyICsRmIVz8EWYTwApPjEekaizG5Pvgrvvuqf+M3fuF_5s5jcubOrWcozYzNetMo44sA1CIwDiHjMBwfQabGGLBfixIazu8QLqAtTHVxu0lTkig_wR7VRZz_vV2WIel6vdIyFsgHS51Y3rh0YATj4zLifQFqiJ1XOUtrwdxH2_o26suQK2cz5GPxABCCkBEGPy0l3jbtm+_Z30x+9_JMTBHKOiEcCl5wybyHdZILIxzISCywl5ua1bf0dSGq8vh0yy57BWwNoBWQ670hhxmk+2gW2uaARAHExk0m51luwI7UDZRhwEY9vyQ_qyyy5P+_ft06zBB+rG7A_+MoxoEJvtqn9LRFzb+eYD_mQmLnGC_iNFI0CviQSKoH7BKIE938qd6swKkki7v_g8Ab84o3yNCfDXX8IckK9l_W6VEImBcsyRtAcKUE7uk8Pmu9ypSKtDZNj2FLwy7hL9fHOwESvPPuLsAcRBto828VijpwDuBERcSOEcpSwKLNpRynLU+agTavPmR1UPg4vM_ERAHMLB3PD4bVfWvyeEfT7KngJQvVttO4vKroDUBV2KgqxMdmZ3RC6EcR9+8GH9fTePOZTx_TcfG3Sr9fgj_tx9V6dn3v06zVfmrQc9BdDZD0hHvyw769HuzAoRbaQCxhGrLePfv785IY_4Y69NzTt58Q0UIA_UAGCzC2QSkDt31SpdDYiirzFUFW3jjK+aqZtl_JePnmBqsj7fma8Xq370FUAQyPkkyZx6Nab+j4RMgr6dH++s7fGDL2gj7sybx05hh0duujQhfsedV6WdO3ani258mvuCoq8AIvEoUsqoMgcRwJcBQUC2BOLOupdbpzoetnkQ3_3lLzXx2PJEz9eY7_pAASKA_GILW5TIBZAN2B18fBJlfMM1F_4v4xuf2lGf9YUmLi4YWgBnV2YRMbAXQgildwD_e2+4vCa+aeO1abEzXsY9UIB4D5QD+7WRBlvdEUI8zvhiZ7yMe6AA5YB+u6Bb3ergDYG4y+3JuycX9YyX8ZftkQSIM11OIttQnmO3+kJfbmVsg9oDBZBN5MqJ2CAyzo9PiKAMsC9VDBRA4LazEtzwSk9VUB9nDCVATjDe8Jte+SzF9s77x60+tAAePDk5W94Wz23jWB9KgCDqGYtkfiS0xxlDCYCgy65TPWPtBH859ldk9nHH0ALYBba9m98fMcadeMQ_tAAxQOltrzwWMLIAzr+dcCyQx2FkARwFA6NUH2eMLMA4k22LfVmANlWOJ9vyDjiest3Gdex3QBupUWz_AQAA___zmJrWAAAABklEQVQDAEL0KczjJjGkAAAAAElFTkSuQmCC')
-const DATA_ICON = toData('iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAADMUlEQVR4AeyYzWoVQRCFW6PZuxAXrgRFQUQR30AUn8TFXfk0LvIkovgGIoIEFMSF4EJcuI+GmG_IgUoxP7enq28YpsWT7qqeqjp1pqfbeDmt_E8TYOUbILUd0HbAyhVon8DKN0A7BNsn0D6BlSvQPoGVb4B2C6zuE_A7fmcCXL_24CQHnmgtu5oAvtncBkrjt60XLoCIewKbVwcpBz5+KK9_LtcOFeDmjccnELh7_0kCG9M0_hzY2Nv3HiVAPEIwRiFMAIjduvOwa_zps5cJRJF8_mKTAKICakXlDhMAQl8PPzBURXSNUAHU+ds3r9P7dwcyi0dygePjf8W5fIJwAfSGIIsQgi88ZSuOkWfJ9+3LJ6ahCBcAdhAFzAUamQJvWc8obm_vSkJUn0_rpWO4ABxSIgVpQb6xkbesdcXRvHy6CWRHjGEC_P7z+RKEaAKiAj6ghrYdiQHKw4gNVIt5KcIEGCICcXaFRZ_PrmvOc0N5o_xhAozdzewKC8jLZt4H1vv8+MZqsZ6DMAFyitpnaRTgYxSwd4FwAfjG5xCn8am4ubnH8oYLQDGIAuY54Mrre55coG9tyje1HiaATmZ7cEFa8M1he0AWH6PiGLGBcqsWvlKECQCR_f2rDN1vbpDlNO8cpz+4z2lGwB4Cz5yGdH_JI3SO4B9hAnAyHx39PUeP71rk547nEp4Z1DqbFg9hAhQzuaAETYBo4e33u4TcYTvAnsyIACIE4FYgF1A+W0u+uWOYACKgww4b0gJ2DhTHTUEcee2tgi8CYQL4kxnCQCTV0Laj4sgBsLlVGH0tfHMRJsAQAcjz5jzwA++3NutDeaP81QWwRHmDgvzYzBk98NfGTgRQY0PNsD60VtsfJgAnM_8U5huvRZrc1KBWVI0wASD089fH7r_FIOrBeg58PDbNq0ZOrrFnQwWgEG8HMIcwYE4DFvgsfnw_TGPr5IxunvrhApAUiDCkmeOzsM0y979IEWNhY8fmuWvVBPBEbDPbzH18LXtnAtRqoDRvE6BUwaXHtx2w9DdYyr_tgFIFlx7fdsDS32Ap_7YDShVcenzbAUt_g6X82w4oVfCi40vr_wcAAP__rVPCSQAAAAZJREFUAwAhxVaftdmDmQAAAABJRU5ErkJggg==')
+const SCREEN_WIDTH = 800;
+const SCREEN_HEIGHT = 600;
+const PANEL_HEIGHT = Math.floor(SCREEN_HEIGHT / 6);
+const PLAYFIELD_HEIGHT = SCREEN_HEIGHT - PANEL_HEIGHT;
+const PLAYFIELD_LEFT_MARGIN = 40;
+const PLAYFIELD_RIGHT_MARGIN = 40;
+const PLAYFIELD_TOP_MARGIN = 100;
+const PLAYFIELD_BOTTOM_MARGIN = 40;
+const PANEL_MARGIN_X = 24;
+const HQ_CAPTURE_MARGIN = 25;
 
 const config = {
   type: Phaser.AUTO,
-  width: 800,
-  height: 600,
+  width: SCREEN_WIDTH,
+  height: SCREEN_HEIGHT,
   backgroundColor: '#1a1a2e',
   scene: { preload, create, update },
   pixelArt: true,
@@ -64,29 +162,13 @@ const config = {
 
 const game = new Phaser.Game(config);
 
+const FONT_FAMILY = 'Courier New, monospace';
+
 // Resource types
 const RESOURCES = {
   DATA: { color: 0x00ffff, icon: 'D', points: 10 },
   COMPUTE: { color: 0xff6b35, icon: 'C', points: 10 },
   FUNDING: { color: 0xffd700, icon: 'F', points: 8 }
-};
-
-const RESOURCE_LABELS = {
-  DATA: 'Datos',
-  COMPUTE: 'Computo',
-  FUNDING: 'Financiamiento'
-};
-
-const EVENT_LABELS = {
-  BUG: 'Bug',
-  SCANDAL: 'Escándalo',
-  LEAK: 'Filtracion'
-};
-
-const PLAYER_LABELS = {
-  'PLAYER 1': 'Jugador 1',
-  'PLAYER 2': 'Jugador 2',
-  TIE: 'Empate'
 };
 
 const MAX_ROUNDS = 3;
@@ -96,21 +178,17 @@ const PLAYER_HITBOX_HEIGHT = CHARACTER_SIZE/3;
 const CAFFEINE_DURATION = 10000;
 const COFFEE_SPAWN_INTERVAL = 15000;
 const COFFEE_MAX_ON_FIELD = 2;
-const COFFEE_COLOR = 0x8b4513;
-const COFFEE_FOAM_COLOR = 0xf5f5f5;
 const PLAYERS_SPEED = 1.7;
 const BUG_SPEED = 1.2;
-const HOP_HEIGHT = 14;
 const PROJECTILE_SPEED = 6;
-const PROJECTILE_COOLDOWN = 1000;
+const PROJECTILE_COOLDOWN = 500;
 const PROJECTILE_PENALTY = 10;
 const COOLDOWN_BAR_WIDTH = 4;
-const COOLDOWN_BAR_GAP = 0;
 const COOLDOWN_BAR_COLOR = 0xffee55;
-const BACKGROUND_COLORS = [0x111111, 0x151515];
+const BACKGROUND_COLORS = [0x111111, 0x181818];
 const TRAIL_MAX_CLONES = 10;
-const TRAIL_CAPTURE_INTERVAL = 30;
-const TRAIL_FADE_SPEED = 0.0003;
+const TRAIL_CAPTURE_INTERVAL = 4;
+const TRAIL_FADE_SPEED = 0.001;
 const BUG_MESSAGES = [
   'RuntimeError: El modelo alcanzó la autoconciencia. Apagando para seguridad.',
   'CUDAError: La GPU decidió unirse a OpenAI.',
@@ -133,14 +211,14 @@ const BUG_MESSAGES = [
   'RuntimeError: El modelo alcanzó la conciencia y se unió al sindicato.',
   'Warning: El AI rival inyectó sarcasmo en tus datos de entrenamiento.',
   'DataIntegrityError: Tu rival reemplazó tu dataset con fanfiction.',
-  'SystemCompromised: Ethics filter disabled remotely.',
+  'SystemCompromised: Filtro de ética desactivado remotamente.',
   'UnauthorizedAccess: Alguien finetunea tu modelo con fotos de gatos.',
   'Alert: Tu rival lanzó una campaña de bot de propaganda.',
-  'DDoS detected: Muchos filósofos preguntando “por qué.”',
+  'DDoS detected: Muchos filósofos preguntando "por qué."',
   'DependencyError: Tu rival publicó un resultado de benchmark falso.',
-  'Firewall disabled: Practicante accidentalmente abrió “email_from_google_ceo.pdf”.',
-  'TrojanDetected: startup rival ofreció “créditos de cómputo gratis.”.',
-  'SourceCorruption: rival reemplazó la función de pérdida con “ego_loss()”.',
+  'Firewall disabled: Practicante accidentalmente abrió "email_from_google_ceo.pdf".',
+  'TrojanDetected: startup rival ofreció "créditos de cómputo gratis.".',
+  'SourceCorruption: rival reemplazó la función de pérdida con "ego_loss()".',
 ];
 const SCANDAL_MESSAGES = [
   'Startup de IA accidentalmente genera LLM que sólo habla en memes.',
@@ -156,14 +234,14 @@ const SCANDAL_MESSAGES = [
   'CEO promete transparencia total, pero borra todos los logs.',
 	'Startup anuncia ronda de 200 millones; inversores confirman que fue en monedas de juego.',
   'Compañía reemplaza al equipo de ética con una IA que siempre aprueba todo.',
-	'Fundador asegura que el AGI resolverá el hambre mundial… empezando por el suyo.',
-  'Inversores descubren que el pro en vivo" era un video de YouTube a 0.75x.',
+	'Fundador asegura que el AGI resolverá el hambre mundia, empezando por la suya.',
+  'Inversores descubren que el demo en vivo era un video de YouTube a 2x.',
 	'Ex empleados denuncian que el plan de "aprendizaje por refuerzo" era literalmente un látigo.',
   'CEO afirma haber meditado con el modelo para conectarse espiritualmente.',
 	'Compañía despide al 90% del personal tras implementar IA que genera despidos.',
 ];
 const LEAK_MESSAGES = [
-  'Leak: “Plan de negocios filtrado: Paso 1: Hype. Paso 2: Pivotear. Paso 3: Exit.',
+  'Leak: Plan de negocios filtrado: Paso 1: Hype. Paso 2: Pivotear. Paso 3: Exit.',
   'Correo interno muestra que el presupuesto en marketing superó al de investigación por 900%.',
   'Inversores confundieron la demo con un episodio de Black Mirror y aún así invirtieron.',
   'Empresa planeaba lanzar su propia moneda: $AWARE.',
@@ -207,17 +285,16 @@ const MUSIC_PATTERNS = [
 ];
 
 const EVENTS = [
-  { name: 'BUG', color: 0xff0000, penalty: 10, icon: 'bugIcon' },
-  { name: 'SCANDAL', color: 0xff00ff, penalty: 15, icon: 'scandalIcon' },
-  { name: 'LEAK', color: 0xff6600, penalty: 12, icon: 'leakIcon' }
+  { name: 'BUG', label: 'Bug', color: 0xff0000, penalty: 10, icon: 'bugIcon' },
+  { name: 'SCANDAL', label: 'Escándalo', color: 0xff00ff, penalty: 15, icon: SCANDAL_TEXTURE_KEY },
+  { name: 'LEAK', label: 'Filtracion', color: 0xff6600, penalty: 12, icon: LEAK_TEXTURE_KEY }
 ];
 
 // Game state
-let p1, p2, graphics, backgroundLayer, resources = [], events = [], coffees = [], projectiles = [], gameOver = false;
+let p1, p2, graphics, backgroundLayer, panelGraphics, resources = [], events = [], coffees = [], projectiles = [], gameOver = false;
 let p1Progress = 0, p2Progress = 0;
 let p1ScoreText, p2ScoreText, statusText, roundText, p1BoostText, p2BoostText;
 let resourceTimer = 0, eventTimer = 0, coffeeTimer = 0;
-let p1Speed = PLAYERS_SPEED, p2Speed = PLAYERS_SPEED;
 let p1Boost = 0, p2Boost = 0;
 let currentRound = 1, p1RoundWins = 0, p2RoundWins = 0;
 let pendingRoundTimer = null;
@@ -227,25 +304,24 @@ let musicTimer = null;
 let p1NextShotTime = 0;
 let p2NextShotTime = 0;
 let lastUpdateTime = 0;
-let pausedForEvent = false;
-let eventPopupElements = [];
-let eventRequiredButton = null;
 let p1TrailSprites = [];
 let p2TrailSprites = [];
 let p1TrailTimer = 0;
 let p2TrailTimer = 0;
+let startScreenActive = true;
+let startScreenElements = [];
+let startScreenTweens = [];
+let startScreenShown = false;
 
 function preload() {
+  this.load.image('hq_base', HQ_ICON);
   this.load.image('fundingIcon', FUNDING_ICON);
   this.load.image('computeIcon', COMPUTE_ICON);
-  this.load.image('dataIcon', DATA_ICON);
   this.load.image('char_north', CHARACTER_SPRITE.north);
   this.load.image('char_east', CHARACTER_SPRITE.east);
   this.load.image('char_south', CHARACTER_SPRITE.south);
   this.load.image('char_west', CHARACTER_SPRITE.west);
   this.load.image('bugIcon', BUG_ICON);
-  this.load.image('scandalIcon', SCANDAL_ICON)
-  this.load.image('leakIcon', LEAK_ICON)
   this.load.image('coffeeIcon', COFFEE_ICON);
 }
 
@@ -253,16 +329,21 @@ function create() {
   backgroundLayer = this.add.graphics();
   backgroundLayer.setDepth(-5);
   drawBackgroundPattern(backgroundLayer);
-  clearTrails();
+  panelGraphics = this.add.graphics();
+  panelGraphics.setDepth(5);
+  panelGraphics.fillStyle(0x111726, 0.95);
+  panelGraphics.fillRect(PANEL_MARGIN_X, PLAYFIELD_HEIGHT, SCREEN_WIDTH - PANEL_MARGIN_X * 2, PANEL_HEIGHT);
+  panelGraphics.lineStyle(2, 0x2d3248, 1);
+  panelGraphics.strokeRect(PANEL_MARGIN_X + 1, PLAYFIELD_HEIGHT + 1, SCREEN_WIDTH - PANEL_MARGIN_X * 2 - 2, PANEL_HEIGHT - 2);
   graphics = this.add.graphics();
   graphics.setDepth(-4);
   
   // Player 1 (Blue startup - top left)
   p1 = {
-    x: 100, y: 100,
+    x: 100, y: 120,
     color: 0x0099ff,
     inventory: { DATA: 0, COMPUTE: 0, FUNDING: 0 },
-    base: { x: 50, y: 50, w: 100, h: 60 },
+    base: { x: 50, y: 30, w: 100, h: 60 },
     sprite: null,
     facing: 'south'
   };
@@ -274,10 +355,10 @@ function create() {
   
   // Player 2 (Green startup - bottom right)
   p2 = {
-    x: 700, y: 550,
+    x: SCREEN_WIDTH - 120, y: PLAYFIELD_HEIGHT - 20,
     color: 0x00ff66,
     inventory: { DATA: 0, COMPUTE: 0, FUNDING: 0 },
-    base: { x: 650, y: 490, w: 100, h: 60 },
+    base: { x: SCREEN_WIDTH - 150, y: PLAYFIELD_HEIGHT - 110, w: 100, h: 60 },
     sprite: null,
     facing: 'north'
   };
@@ -287,47 +368,67 @@ function create() {
   p2.sprite.setTint(p2.color);
   p2.currentTexture = 'char_north';
   
-  this.add.text(p1.base.x + p1.base.w / 2, p1.base.y - 12, 'DeepBlueish HQ', {
+  addText(this, p1.base.x + p1.base.w / 2, p1.base.y + 75, 'DeepBlueish HQ', {
     fontSize: '16px',
     color: '#66ccff',
     fontStyle: 'bold'
   }).setOrigin(0.5, 1);
 
-  this.add.text(p2.base.x + p2.base.w / 2, p2.base.y - 12, 'GreenAI HQ', {
+  addText(this, p2.base.x + p2.base.w / 2, p2.base.y + 75, 'GreenAI HQ', {
     fontSize: '16px',
     color: '#00ff99',
     fontStyle: 'bold'
   }).setOrigin(0.5, 1);
   
   // UI
-  p1ScoreText = this.add.text(20, 15, '', { 
+  p1ScoreText = addText(this, 30, 10, '', { 
     fontSize: '20px', color: '#0099ff', fontWeight: 'bold'
   });
   
-  p2ScoreText = this.add.text(720, 15, '', { 
+  p2ScoreText = addText(this, SCREEN_WIDTH - 30, 10, '', { 
     fontSize: '20px', color: '#00ff66', fontWeight: 'bold'
   }).setOrigin(1, 0)
   
-  roundText = this.add.text(400, 40, 'Ronda ' + currentRound + ' de ' + MAX_ROUNDS, {
+  roundText = addText(this, SCREEN_WIDTH / 2, 40, 'Ronda ' + currentRound + ' de ' + MAX_ROUNDS, {
     fontSize: '16px', color: '#bbbbbb'
   }).setOrigin(0.5, 0);
   
-  statusText = this.add.text(400, 580, 'Ronda ' + currentRound + ': Logra desarrollar AGI antes que la compañía rival', {
-    fontSize: '16px', color: '#888888'
-  }).setOrigin(0.5, 1);
+  addText(this, SCREEN_WIDTH / 2, PLAYFIELD_HEIGHT + 8, 'Eventos del juego', {
+    fontSize: '16px',
+    color: '#ffdd55',
+    fontStyle: 'bold'
+  }).setOrigin(0.5, 0);
+
+  statusText = addText(this, PANEL_MARGIN_X + 16, PLAYFIELD_HEIGHT + 16, '', {
+    fontSize: '16px',
+    color: '#eeeeee',
+    align: 'left',
+    wordWrap: { width: SCREEN_WIDTH - (PANEL_MARGIN_X + 12) * 2 }
+  }).setOrigin(0, 0).setDepth(6);
   
-  p1BoostText = this.add.text(40, 580, '', {
+  p1BoostText = addText(this, 40, PLAYFIELD_HEIGHT - 8, '', {
     fontSize: '16px', color: '#ffdd55', fontStyle: 'bold'
   }).setOrigin(0, 1).setVisible(false);
   
-  p2BoostText = this.add.text(760, 580, '', {
+  p2BoostText = addText(this, SCREEN_WIDTH - 40, PLAYFIELD_HEIGHT - 8, '', {
     fontSize: '16px', color: '#ffdd55', fontStyle: 'bold'
   }).setOrigin(1, 1).setVisible(false);
   
   // Instructions
-  this.add.text(400, 10, 'Lleva los recursos a tus HQ', {
-    fontSize: '20px', color: '#666666'
+  addText(this, SCREEN_WIDTH / 2, 10, 'Lleva los recursos a tus HQ', {
+    fontSize: '20px', color: '#999999'
   }).setOrigin(0.5, 0);
+
+  addText(this, SCREEN_WIDTH / 2, PLAYFIELD_HEIGHT + PANEL_HEIGHT - 50, 'Tips:\n• Evita bugs y escándalos\n• Entrega recursos rápido', {
+    fontSize: '12px',
+    color: '#888888',
+    align: 'center',
+    wordWrap: { width: SCREEN_WIDTH - PANEL_MARGIN_X * 2 - 20 }
+  }).setOrigin(0.5, 0);
+  
+  updateStatus('Ronda ' + currentRound + ': Logra desarrollar AGI antes que la compañía rival');
+  p1ScoreText.setText('0%');
+  p2ScoreText.setText('0%');
   
   // Input
   this.keys = this.input.keyboard.addKeys({
@@ -338,9 +439,9 @@ function create() {
   
   this.input.keyboard.on('keydown', (e) => {
     const key = KEYBOARD_TO_ARCADE[e.key] || KEYBOARD_TO_ARCADE[e.code] || e.key || e.code;
-    if (pausedForEvent) {
-      if (key === eventRequiredButton) {
-        resumeEventPause(this);
+    if (startScreenActive) {
+      if (key === 'START1' || key === 'START2') {
+        beginGameFromStartScreen(this);
       }
       return;
     }
@@ -357,25 +458,28 @@ function create() {
   
   // Resources will spawn automatically once the round starts
   resourceTimer = 0;
-  
-  startBackgroundMusic(this);
-  playTone(this, 440, 0.1)
+
+  if (!startScreenShown) {
+    createStartScreen(this);
+  } else {
+    startScreenActive = false;
+    setPlayersVisible(true);
+    startBackgroundMusic(this);
+    playTone(this, 440, 0.1);
+  }
 }
 
 function update(time, delta) {
-  if (gameOver) return;
+  if (startScreenActive || gameOver) return;
   if (this?.time && typeof this.time.now === 'number') {
     lastUpdateTime = this.time.now;
   } else if (typeof time === 'number') {
     lastUpdateTime = time;
   }
-  if (pausedForEvent) {
-    return;
-  }
-  
   // Player movement
-  const speed1 = p1Boost > 0 ? p1Speed * 1.5 : p1Speed;
-  const speed2 = p2Boost > 0 ? p2Speed * 1.5 : p2Speed;
+  const baseSpeed = PLAYERS_SPEED;
+  const speed1 = baseSpeed * (p1Boost > 0 ? 1.5 : 1);
+  const speed2 = baseSpeed * (p2Boost > 0 ? 1.5 : 1);
   
   const prevP1X = p1.x;
   const prevP1Y = p1.y;
@@ -393,13 +497,12 @@ function update(time, delta) {
   if (this.keys.right.isDown) p2.x += speed2;
   
   // Boundaries
-  p1.x = Phaser.Math.Clamp(p1.x, 15, 785);
-  p1.y = Phaser.Math.Clamp(p1.y, 80, 570);
-  p2.x = Phaser.Math.Clamp(p2.x, 15, 785);
-  p2.y = Phaser.Math.Clamp(p2.y, 80, 570);
-
-  const p1Moved = Math.abs(p1.x - prevP1X) + Math.abs(p1.y - prevP1Y) > 0.4;
-  const p2Moved = Math.abs(p2.x - prevP2X) + Math.abs(p2.y - prevP2Y) > 0.4;
+  p1.x = Phaser.Math.Clamp(p1.x, PLAYFIELD_LEFT_MARGIN, SCREEN_WIDTH - PLAYFIELD_RIGHT_MARGIN);
+  p1.y = Phaser.Math.Clamp(p1.y, PLAYFIELD_TOP_MARGIN, PLAYFIELD_HEIGHT - 10);
+  p2.x = Phaser.Math.Clamp(p2.x, PLAYFIELD_LEFT_MARGIN, SCREEN_WIDTH - PLAYFIELD_RIGHT_MARGIN);
+  p2.y = Phaser.Math.Clamp(p2.y, PLAYFIELD_TOP_MARGIN, PLAYFIELD_HEIGHT - 10);
+  const p1Moved = Math.abs(p1.x - prevP1X) + Math.abs(p1.y - prevP1Y) > 0.25;
+  const p2Moved = Math.abs(p2.x - prevP2X) + Math.abs(p2.y - prevP2Y) > 0.25;
   
   // Deposit action
   if (playerHasResources(p1) && playerInBase(p1)) depositResources(p1, 1, this);
@@ -413,7 +516,7 @@ function update(time, delta) {
       if (res.sprite) res.sprite.destroy();
       resources.splice(i, 1);
       playTone(this, 660, 0.08);
-      updateStatus('Jugador 1 recolectó ' + (RESOURCE_LABELS[res.type] || res.type));
+      showFloatingLabel(this, res.type === 'DATA' ? '+Datos' : res.type === 'COMPUTE' ? '+GPU' : '+$$$', res.x, res.y - 20, '#00d9ff');
       continue;
     }
     if (pointInPlayerBounds(p2, res.x, res.y)) {
@@ -421,7 +524,7 @@ function update(time, delta) {
       if (res.sprite) res.sprite.destroy();
       resources.splice(i, 1);
       playTone(this, 880, 0.08);
-      updateStatus('Jugador 2 recolectó ' + (RESOURCE_LABELS[res.type] || res.type));
+      showFloatingLabel(this, res.type === 'DATA' ? '+Datos' : res.type === 'COMPUTE' ? '+GPU' : '+$$$', res.x, res.y - 20, '#00ff88');
     }
   }
   
@@ -443,10 +546,10 @@ function update(time, delta) {
     evt.x += evt.vx;
     evt.y += evt.vy;
 
-    const minX = 40;
-    const maxX = 760;
-    const minY = 100;
-    const maxY = 560;
+    const minX = PLAYFIELD_LEFT_MARGIN;
+    const maxX = SCREEN_WIDTH - PLAYFIELD_RIGHT_MARGIN;
+    const minY = PLAYFIELD_TOP_MARGIN;
+    const maxY = PLAYFIELD_HEIGHT - 20;
 
     if (evt.x <= minX || evt.x >= maxX) {
       evt.x = Phaser.Math.Clamp(evt.x, minX, maxX);
@@ -475,23 +578,19 @@ function update(time, delta) {
       p1Progress = Math.max(0, p1Progress - evt.penalty);
       events.splice(i, 1);
       playTone(this, 220, 0.15);
-      updateStatus('Jugador 1 choco con ' + (evt.label || evt.name) + '! -' + evt.penalty + '%');
-      showEventPopup(this, evt.name, 1);
-      break;
+      logEventMessage(evt.name, 1);
+      showFloatingLabel(this, evt.name === 'LEAK' ? 'Filtración' : evt.name === 'SCANDAL' ? 'Escándalo' : 'BUG', evt.x, evt.y + 10, '#ff3355', 1);
+      continue;
     }
     if (pointInPlayerBounds(p2, evt.x, evt.y)) {
       if (evt.sprite) evt.sprite.destroy();
       p2Progress = Math.max(0, p2Progress - evt.penalty);
       events.splice(i, 1);
       playTone(this, 220, 0.15);
-      updateStatus('Jugador 2 choco con ' + (evt.label || evt.name) + '! -' + evt.penalty + '%');
-      showEventPopup(this, evt.name, 2);
-      break;
+      logEventMessage(evt.name, 2);
+      showFloatingLabel(this, evt.name === 'LEAK' ? 'Filtración' : evt.name === 'SCANDAL' ? 'Escándalo' : 'BUG', evt.x, evt.y + 10, '#ff3355', 1);
+      continue;
     }
-  }
-  
-  if (pausedForEvent) {
-    return;
   }
   
   // Coffee collection
@@ -504,6 +603,7 @@ function update(time, delta) {
     if (collectedBy) {
       if (mug.sprite) mug.sprite.destroy();
       coffees.splice(i, 1);
+      showFloatingLabel(this, '+Café', mug.x, mug.y - 20, collectedBy === 1 ? '#ffdd55' : '#ffee99');
       activateCaffeineBoost(collectedBy, this);
     }
   }
@@ -514,8 +614,6 @@ function update(time, delta) {
     proj.x += proj.vx * dt;
     proj.y += proj.vy * dt;
     const targetPlayer = proj.owner === 1 ? p2 : p1;
-    const targetLabel = proj.owner === 1 ? 'Jugador 2' : 'Jugador 1';
-    const shooterLabel = proj.owner === 1 ? 'Jugador 1' : 'Jugador 2';
     const bounds = getPlayerBounds(targetPlayer);
     if (proj.sprite) {
       proj.sprite.setPosition(proj.x, proj.y);
@@ -534,7 +632,6 @@ function update(time, delta) {
       if (proj.sprite) proj.sprite.destroy();
       projectiles.splice(i, 1);
       playTone(this, 320, 0.08);
-      updateStatus(`${shooterLabel} impactó! ${targetLabel} pierde ${PROJECTILE_PENALTY}%`);
       continue;
     }
     if (
@@ -575,14 +672,14 @@ function update(time, delta) {
   // Update boosts
   if (p1Boost > 0) {
     p1Boost = Math.max(0, p1Boost - delta);
-    if (p1BoostText) {
-      p1BoostText.setVisible(true);
-      p1BoostText.setText('Cafeína: ' + Math.ceil(p1Boost / 1000) + 's');
-    }
     p1TrailTimer += delta;
   } else {
     p1Boost = 0;
     if (p1BoostText) p1BoostText.setVisible(false);
+    if (p1TrailSprites.length) {
+      clearTrailArray(p1TrailSprites);
+    }
+    p1TrailTimer = 0;
   }
   
   if (p2Boost > 0) {
@@ -595,19 +692,22 @@ function update(time, delta) {
   } else {
     p2Boost = 0;
     if (p2BoostText) p2BoostText.setVisible(false);
+    if (p2TrailSprites.length) {
+      clearTrailArray(p2TrailSprites);
+    }
+    p2TrailTimer = 0;
   }
   
   updatePlayerSprite(this, p1, p1.x - prevP1X, p1.y - prevP1Y);
   updatePlayerSprite(this, p2, p2.x - prevP2X, p2.y - prevP2Y);
-  if (p1Boost > 0 && p1TrailTimer >= TRAIL_CAPTURE_INTERVAL && (p1Moved || !p1TrailSprites.length)) {
+  
+  if (p1Boost > 0 && p1TrailTimer >= TRAIL_CAPTURE_INTERVAL) {
     p1TrailTimer = 0;
     addTrailClone(this, p1, p1TrailSprites);
-    refreshTrailAlpha(p1TrailSprites);
   }
-  if (p2Boost > 0 && p2TrailTimer >= TRAIL_CAPTURE_INTERVAL && (p2Moved || !p2TrailSprites.length)) {
+  if (p2Boost > 0 && p2TrailTimer >= TRAIL_CAPTURE_INTERVAL) {
     p2TrailTimer = 0;
     addTrailClone(this, p2, p2TrailSprites);
-    refreshTrailAlpha(p2TrailSprites);
   }
   fadeTrail(p1TrailSprites, delta);
   fadeTrail(p2TrailSprites, delta);
@@ -618,16 +718,16 @@ function update(time, delta) {
 }
 
 function depositResources(player, playerNum, scene) {
-  const base = player.base;
-  const px = player.x, py = player.y;
-  
-  // Check if near base
-  if (px >= base.x && px <= base.x + base.w && 
-      py >= base.y && py <= base.y + base.h) {
+  if (!playerInBase(player)) return;
     
     let total = 0;
+  const collectedCounts = {};
     for (const type in player.inventory) {
-      total += player.inventory[type] * RESOURCES[type].points;
+    const amount = player.inventory[type];
+    if (amount && RESOURCES[type]) {
+      collectedCounts[type] = amount;
+      total += amount * RESOURCES[type].points;
+    }
       player.inventory[type] = 0;
     }
     
@@ -637,30 +737,23 @@ function depositResources(player, playerNum, scene) {
       } else {
         p2Progress = Math.min(100, p2Progress + total);
       }
-      playTone(scene, 1200, 0.12);
-      updateStatus('Jugador ' + playerNum + ' deposito +' + total + '%');
-      
-    }
+    playDepositAnimation(scene, player, collectedCounts);
   }
 }
 
 function attemptShoot(scene, shooter, target, playerNum) {
   if (!scene || !shooter || !target) return;
-  if (pausedForEvent || gameOver) return;
+  if (gameOver) return;
   const now = (scene.time && typeof scene.time.now === 'number')
     ? scene.time.now
     : lastUpdateTime;
   if (playerNum === 1) {
     if (now < p1NextShotTime) {
-      const remaining = Math.ceil((p1NextShotTime - now) / 1000);
-      updateStatus(`Jugador 1 recargando (${remaining}s)`);
       return;
     }
     p1NextShotTime = now + PROJECTILE_COOLDOWN;
   } else {
     if (now < p2NextShotTime) {
-      const remaining = Math.ceil((p2NextShotTime - now) / 1000);
-      updateStatus(`Jugador 2 recargando (${remaining}s)`);
       return;
     }
     p2NextShotTime = now + PROJECTILE_COOLDOWN;
@@ -687,51 +780,14 @@ function attemptShoot(scene, shooter, target, playerNum) {
     owner: playerNum,
     sprite
   });
-  const shooterLabel = playerNum === 1 ? 'Jugador 1' : 'Jugador 2';
-  updateStatus(`${shooterLabel} disparó una demanda!`);
   playTone(scene, 700, 0.05);
 }
 
-function showEventPopup(scene, type, playerNum) {
-  if (!scene || pausedForEvent) return;
-  pausedForEvent = true;
-  clearEventPopup();
-  eventRequiredButton = playerNum === 1 ? 'P1A' : 'P2A';
-  const overlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0.82).setDepth(4000);
-  const frame = scene.add.rectangle(400, 300, 580, 280, 0x1f1f3d, 0.95)
-    .setDepth(4001)
-    .setStrokeStyle(4, getEventColor(type), 1);
+function logEventMessage(type, playerNum) {
   const playerLabel = playerNum === 1 ? 'Jugador 1' : 'Jugador 2';
-  const eventLabel = EVENT_LABELS[type] || type;
-  const title = scene.add.text(400, 220, `${eventLabel} para ${playerLabel}`, {
-    fontSize: '28px',
-    color: '#ffffff',
-    fontStyle: 'bold',
-    align: 'center',
-    stroke: '#000000',
-    strokeThickness: 3
-  }).setOrigin(0.5).setDepth(4002);
-  const message = getEventMessage(type);
-  const body = scene.add.text(400, 300, message, {
-    fontSize: '18px',
-    color: '#ffeeaa',
-    align: 'center',
-    wordWrap: { width: 500 }
-  }).setOrigin(0.5).setDepth(4002);
-  const promptText = `Presiona "Disparo" (${eventRequiredButton}) para continuar`;
-  const prompt = scene.add.text(400, 380, promptText, {
-    fontSize: '16px',
-    color: '#ffffff',
-    align: 'center'
-  }).setOrigin(0.5).setDepth(4002);
-  eventPopupElements = [overlay, frame, title, body, prompt];
-}
-
-function resumeEventPause(scene) {
-  if (!pausedForEvent) return;
-  pausedForEvent = false;
-  eventRequiredButton = null;
-  clearEventPopup();
+  const evt = EVENTS.find(e => e.name === type);
+  const message = `${evt ? evt.label : type} afecta a ${playerLabel}: ${getEventMessage(type)}`;
+  updateStatus(message);
 }
 
 function getEventMessage(type) {
@@ -743,18 +799,21 @@ function getEventMessage(type) {
   return messages[idx];
 }
 
-function getEventColor(type) {
-  if (type === 'BUG') return 0xff4444;
-  if (type === 'SCANDAL') return 0xff66ff;
-  if (type === 'LEAK') return 0xff9933;
-  return 0xffffff;
+function playerLabel(key) {
+  return key === 'PLAYER 1' ? 'Jugador 1' : key === 'PLAYER 2' ? 'Jugador 2' : 'Empate';
+}
+
+function randomPlayfieldPoint() {
+  return {
+    x: PLAYFIELD_LEFT_MARGIN + Math.random() * (SCREEN_WIDTH - PLAYFIELD_LEFT_MARGIN - PLAYFIELD_RIGHT_MARGIN),
+    y: PLAYFIELD_TOP_MARGIN + Math.random() * (PLAYFIELD_HEIGHT - PLAYFIELD_TOP_MARGIN - PLAYFIELD_BOTTOM_MARGIN)
+  };
 }
 
 function spawnResource(scene) {
   const types = Object.keys(RESOURCES);
   const type = types[Math.floor(Math.random() * types.length)];
-  const x = 100 + Math.random() * 600;
-  const y = 100 + Math.random() * 440;
+  const { x, y } = randomPlayfieldPoint();
   const resource = {
     x,
     y,
@@ -772,8 +831,9 @@ function spawnResource(scene) {
       resource.sprite.setDisplaySize(50, 50);
       resource.sprite.setDepth(5);
     } else if (type === 'DATA') {
-      resource.sprite = scene.add.image(x, y, 'dataIcon');
-      resource.sprite.setDisplaySize(60, 60);
+      const dataKey = ensureDataTexture(scene);
+      resource.sprite = scene.add.image(x, y, dataKey);
+      resource.sprite.setDisplaySize(36, 36);
       resource.sprite.setDepth(5);
     }
   }
@@ -781,8 +841,7 @@ function spawnResource(scene) {
 }
 
 function spawnCoffee(scene) {
-  const x = 100 + Math.random() * 600;
-  const y = 100 + Math.random() * 440;
+  const { x, y } = randomPlayfieldPoint();
   const sprite = scene.add.image(x, y, 'coffeeIcon').setDisplaySize(64, 64).setDepth(8);
   coffees.push({
     x,
@@ -792,21 +851,10 @@ function spawnCoffee(scene) {
 }
 
 function spawnEvent(scene) {
-  let evt;
   const roll = Math.random();
-  if (roll < 0.2) {
-    evt = EVENTS.find(e => e.name === 'SCANDAL');
-  } else if (roll < 0.35) {
-    evt = EVENTS.find(e => e.name === 'LEAK');
-  } else {
-    evt = EVENTS.find(e => e.name === 'BUG');
-  }
-  if (!evt) {
-    evt = EVENTS[0];
-  }
+  const evt = roll < 0.2 ? EVENTS[1] : roll < 0.35 ? EVENTS[2] : EVENTS[0];
 
-  const x = 100 + Math.random() * 600;
-  const y = 100 + Math.random() * 440;
+  const { x, y } = randomPlayfieldPoint();
 
   let vx = 0;
   let vy = 0;
@@ -822,39 +870,52 @@ function spawnEvent(scene) {
     facing = Math.atan2(vy, vx);
     sprite = scene.add.image(x, y, 'bugIcon').setDisplaySize(40, 40);
   } else {
-    sprite = scene.add.image(x, y, evt.icon).setDisplaySize(40, 40).setOrigin(0.5, 0.5);
+    const texture =
+      evt.name === 'SCANDAL' ? ensureScandalTexture(scene) :
+      evt.name === 'LEAK' ? ensureLeakTexture(scene) :
+      evt.icon;
+    sprite = scene.add.image(x, y, texture).setDisplaySize(40, 40).setOrigin(0.5, 0.5);
   }
 
   sprite.setDepth(7);
 
-  events.push({
-    x,
-    y,
-    vx,
-    vy,
-    mobile,
-    sprite,
-    facing,
-    label: EVENT_LABELS[evt.name] || evt.name,
-    ...evt
-  });
+  events.push({ ...evt, x, y, vx, vy, mobile, sprite, facing });
 }
 
 function draw() {
   graphics.clear();
   
-  // Draw bases
-  graphics.fillStyle(p1.color, 0.3);
-  graphics.fillRect(p1.base.x, p1.base.y, p1.base.w, p1.base.h);
-  graphics.lineStyle(3, p1.color, 1);
-  graphics.strokeRect(p1.base.x, p1.base.y, p1.base.w, p1.base.h);
+  // Draw HQ bases using HQ base64 sprite
+  if (!p1.baseSprite) {
+    p1.baseSprite = graphics.scene.add.image(
+      p1.base.x + p1.base.w / 2,
+      p1.base.y + p1.base.h - 8,
+      'hq_base'
+    )
+      .setDisplaySize(p1.base.w, p1.base.h)
+      .setOrigin(0.5, 1)
+      .setDepth(3)
+      .setTint(p1.color);
+  }
+  p1.baseSprite.setPosition(p1.base.x + p1.base.w / 2, p1.base.y + p1.base.h - 8).setVisible(true);
   drawRoundWins(p1.base, p1RoundWins, p1.color);
   
-  graphics.fillStyle(p2.color, 0.3);
-  graphics.fillRect(p2.base.x, p2.base.y, p2.base.w, p2.base.h);
-  graphics.lineStyle(3, p2.color, 1);
-  graphics.strokeRect(p2.base.x, p2.base.y, p2.base.w, p2.base.h);
+  if (!p2.baseSprite) {
+    p2.baseSprite = graphics.scene.add.image(
+      p2.base.x + p2.base.w / 2,
+      p2.base.y + p2.base.h - 8,
+      'hq_base'
+    )
+      .setDisplaySize(p2.base.w, p2.base.h)
+      .setOrigin(0.5, 1)
+      .setDepth(3)
+      .setTint(p2.color);
+  }
+  p2.baseSprite.setPosition(p2.base.x + p2.base.w / 2, p2.base.y + p2.base.h - 8).setVisible(true);
   drawRoundWins(p2.base, p2RoundWins, p2.color);
+
+  if (p1ScoreText) p1ScoreText.setText(`${Math.round(p1Progress)}%`);
+  if (p2ScoreText) p2ScoreText.setText(`${Math.round(p2Progress)}%`);
   
   // Draw resources
   resources.forEach(res => {
@@ -881,7 +942,7 @@ function draw() {
     if (evt.sprite) {
       evt.sprite.setPosition(evt.x, evt.y).setVisible(true);
       if (evt.mobile && typeof evt.facing === 'number') {
-        evt.sprite.setRotation(Phaser.Math.Angle.Wrap(evt.facing + Math.PI / 2));
+        evt.sprite.setRotation(Phaser.Math.Angle.Wrap(evt.facing - Math.PI / 2));
       } else {
         evt.sprite.setRotation(0);
       }
@@ -910,8 +971,8 @@ function draw() {
   const barTop = 0;
   const p1CooldownFraction = getCooldownFraction(p1NextShotTime);
   const p2CooldownFraction = getCooldownFraction(p2NextShotTime);
-  const p1CooldownX = barWidth + COOLDOWN_BAR_GAP;
-  const p2CooldownX = 780 - COOLDOWN_BAR_GAP - COOLDOWN_BAR_WIDTH;
+  const p1CooldownX = barWidth;
+  const p2CooldownX = 780 - COOLDOWN_BAR_WIDTH;
   const cooldownBackgroundColor = 0x222222;
   graphics.fillStyle(cooldownBackgroundColor, 1);
   graphics.fillRect(p1CooldownX, barTop, COOLDOWN_BAR_WIDTH, barHeight);
@@ -940,14 +1001,17 @@ function draw() {
 
 
 function updateStatus(msg) {
+  if (!statusText) return;
   statusText.setText(msg);
+  statusText.setAlpha(1);
+  statusText.setVisible(true);
 }
 
 function drawRoundWins(base, wins, color) {
   if (!wins) return;
   const spacing = 22;
   const radius = 7;
-  const centerY = base.y + base.h + 14;
+  const centerY = base.y + base.h + 24;
   const startX = base.x + base.w / 2 - ((wins - 1) * spacing) / 2;
   graphics.lineStyle(2, 0x000000, 0.6);
   for (let i = 0; i < wins; i++) {
@@ -956,6 +1020,132 @@ function drawRoundWins(base, wins, color) {
     graphics.fillCircle(cx, centerY, radius);
     graphics.strokeCircle(cx, centerY, radius);
   }
+}
+
+function createStartScreen(scene) {
+  startScreenActive = true;
+  setPlayersVisible(false);
+  startScreenElements.forEach(el => { if (el && el.destroy) el.destroy(); });
+  startScreenTweens.forEach(t => { if (t && t.stop) t.stop(); });
+  startScreenElements = [];
+  startScreenTweens = [];
+
+  const overlay = scene.add.rectangle(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT, 0x070a16, 0.92).setDepth(50);
+  startScreenElements.push(overlay);
+
+  const title = addText(scene, SCREEN_WIDTH / 2, 90, 'RACE TO AGI', {
+    fontSize: '60px',
+    color: '#ffea00',
+    fontStyle: 'bold'
+  }).setOrigin(0.5, 0.5).setDepth(51);
+  startScreenElements.push(title);
+  startScreenTweens.push(scene.tweens.add({
+    targets: title,
+    y: title.y - 18,
+    duration: 1800,
+    yoyo: true,
+    repeat: -1,
+    ease: 'Sine.easeInOut'
+  }))
+  const startPrompt = addText(scene, SCREEN_WIDTH / 2, 140, 'Presiona START para empezar', {
+    fontSize: '20px',
+    color: '#ffee55',
+    fontStyle: 'bold'
+  }).setOrigin(0.5, 0.5).setDepth(51);
+  startScreenElements.push(startPrompt);
+
+  const previewY = 280;
+  const player1Preview = scene.add.image(160, previewY + 55, 'char_south')
+    .setDisplaySize(CHARACTER_SIZE * 2, CHARACTER_SIZE * 2)
+    .setOrigin(0.5, 1)
+    .setDepth(51)
+    .setTint(p1.color || 0x0099ff);
+  startScreenElements.push(player1Preview);
+
+  const player2Preview = scene.add.image(640, previewY + 55, 'char_south')
+  .setDisplaySize(CHARACTER_SIZE * 2, CHARACTER_SIZE * 2)
+  .setOrigin(0.5, 1)
+  .setDepth(51)
+  .setTint(p2.color || 0x0099ff);
+  startScreenElements.push(player2Preview);
+
+
+  const controlsText = addText(scene, 240, previewY - 90,
+    'Movimiento: ↑ → ↓ ←\nA: Disparar demandas al rival.',
+    {
+      fontSize: '18px',
+      color: '#ffffff',
+      align: 'left',
+      lineSpacing: 8
+    }).setOrigin(0, 0).setDepth(51);
+  startScreenElements.push(controlsText);
+
+  const collectTitle = addText(scene, SCREEN_WIDTH / 2, 300, 'Recolecta estos objetos', {
+    fontSize: '22px',
+    color: '#66ffcc',
+    fontStyle: 'bold'
+  }).setOrigin(0.5, 0).setDepth(51);
+  startScreenElements.push(collectTitle);
+
+  const dataTexture = ensureDataTexture(scene);
+  const collectItems = [
+    { key: dataTexture, label: 'Datos' },
+    { key: 'computeIcon', label: 'GPU' },
+    { key: 'fundingIcon', label: '$$$' },
+    { key: 'coffeeIcon', label: 'Café' }
+  ];
+  const collectSpacing = 100;
+  const collectStartX = SCREEN_WIDTH / 2 - ((collectItems.length - 1) * collectSpacing) / 2;
+  collectItems.forEach((item, idx) => {
+    const icon = scene.add.image(collectStartX + idx * collectSpacing, 360, item.key)
+      .setDisplaySize(item.key === dataTexture ? 52 : 64, item.key === dataTexture ? 52 : 64)
+      .setDepth(51);
+    const label = addText(scene, icon.x, 390, item.label, {
+      fontSize: '14px',
+      color: '#dddddd'
+    }).setOrigin(0.5, 0).setDepth(51);
+    startScreenElements.push(icon, label);
+  });
+
+  const avoidTitle = addText(scene, SCREEN_WIDTH / 2, 440, 'Evita estos objetos', {
+    fontSize: '22px',
+    color: '#ff8888',
+    fontStyle: 'bold'
+  }).setOrigin(0.5, 0).setDepth(51);
+  startScreenElements.push(avoidTitle);
+
+  const scandalTexture = ensureScandalTexture(scene);
+  const leakTexture = ensureLeakTexture(scene);
+  const avoidItems = [
+    { key: 'bugIcon', label: 'Bug' },
+    { key: leakTexture, label: 'Filtración' },
+    { key: scandalTexture, label: 'Escándalo' }
+  ];
+  const avoidSpacing = 120;
+  const avoidStartX = SCREEN_WIDTH / 2 - ((avoidItems.length - 1) * avoidSpacing) / 2;
+  avoidItems.forEach((item, idx) => {
+    const icon = scene.add.image(avoidStartX + idx * avoidSpacing, 490, item.key)
+      .setDisplaySize(40, 40)
+      .setDepth(51);
+    const label = addText(scene, icon.x, 520, item.label, {
+      fontSize: '14px',
+      color: '#ffcccc'
+    }).setOrigin(0.5, 0).setDepth(51);
+    startScreenElements.push(icon, label);
+  });
+}
+
+function beginGameFromStartScreen(scene) {
+  if (!startScreenActive) return;
+  startScreenActive = false;
+  startScreenShown = true;
+  startScreenElements.forEach(el => { if (el && el.destroy) el.destroy(); });
+  startScreenTweens.forEach(t => { if (t && t.stop) t.stop(); });
+  startScreenElements = [];
+  startScreenTweens = [];
+  setPlayersVisible(true);
+  startBackgroundMusic(scene);
+  playTone(scene, 440, 0.1);
 }
 
 function startBackgroundMusic(scene) {
@@ -1068,13 +1258,12 @@ function stopBackgroundMusic(scene) {
 
 function endGame(scene) {
   gameOver = true;
-  resumeEventPause(scene);
   stopBackgroundMusic(scene);
   const winner = p1Progress > p2Progress ? 'PLAYER 1' : 
                  p2Progress > p1Progress ? 'PLAYER 2' : 'TIE';
   const winColor = p1Progress > p2Progress ? '#0099ff' : 
                    p2Progress > p1Progress ? '#00ff66' : '#ffff00';
-  const playerLabel = winner !== 'TIE' ? PLAYER_LABELS[winner] : null;
+  const winLabel = winner !== 'TIE' ? playerLabel(winner) : null;
   
   if (winner === 'PLAYER 1') p1RoundWins++;
   else if (winner === 'PLAYER 2') p2RoundWins++;
@@ -1090,37 +1279,41 @@ function endGame(scene) {
   overlay.fillStyle(0x000000, 0.82);
   overlay.fillRect(0, 0, 800, 600);
   
-  const roundMessage = playerLabel 
-    ? `${playerLabel} gana la Ronda ${currentRound}`
+  // draw overlay backgrounds
+  const roundMessage = winLabel 
+    ? `${winLabel} gana la Ronda ${currentRound}`
     : `La Ronda ${currentRound} termina en empate!`;
   
   if (roundText) {
     roundText.setText(`Ronda ${currentRound} completada`);
   }
-  updateStatus(roundMessage);
-  
-  scene.add.text(400, 220, roundMessage, {
-    fontSize: '40px',
-    color: winColor,
-    fontWeight: 'bold',
-    stroke: '#000000',
-    strokeThickness: 6
-  }).setOrigin(0.5).setDepth(1000);
 
-  const finalRound = currentRound >= MAX_ROUNDS;
+  const matchWinnerKey = p1RoundWins >= 2 ? 'PLAYER 1' :
+                        p2RoundWins >= 2 ? 'PLAYER 2' : null;
+  const finalRound = matchWinnerKey !== null || currentRound >= MAX_ROUNDS;
+
   if (finalRound) {
-    const totalWinnerKey = p1RoundWins > p2RoundWins ? 'PLAYER 1' :
+    const totalWinnerKey = matchWinnerKey !== null ? matchWinnerKey :
+      p1RoundWins > p2RoundWins ? 'PLAYER 1' :
                         p2RoundWins > p1RoundWins ? 'PLAYER 2' : null;
-    const totalWinnerLabel = totalWinnerKey ? PLAYER_LABELS[totalWinnerKey] : null;
+    const totalWinnerLabel = totalWinnerKey ? playerLabel(totalWinnerKey) : null;
     const agiMessage = totalWinnerLabel ? `${totalWinnerLabel} logró la AGI!` : 'No hay AGI hoy - empate!';
     if (roundText) roundText.setText('Partida completada');
     updateStatus(agiMessage);
-    const agiText = scene.add.text(400, 340, agiMessage, {
-      fontSize: totalWinnerLabel ? '36px' : '32px',
-      color: '#ffff66'
+    addText(scene, 400, 250, agiMessage, {
+      fontSize: totalWinnerLabel ? '44px' : '36px',
+      color: '#ffff66',
+      fontWeight: 'bold',
+      stroke: '#000000',
+      strokeThickness: 6
+    }).setOrigin(0.5).setDepth(1000);
+
+    addText(scene, 400, 310, 'Felicidades! El mundo nunca volverá a ser igual', {
+      fontSize: '24px',
+      color: '#ffffff'
     }).setOrigin(0.5).setDepth(1000);
     
-    const restartTxt = scene.add.text(400, 410, 'Presiona START para reiniciar la partida', {
+    const restartTxt = addText(scene, 400, 410, 'Presiona START para reiniciar la partida', {
     fontSize: '24px',
     color: '#ffff00'
     }).setOrigin(0.5).setDepth(1000);
@@ -1133,11 +1326,20 @@ function endGame(scene) {
     repeat: -1
   });
   } else {
+    updateStatus(roundMessage);
+    addText(scene, 400, 220, roundMessage, {
+      fontSize: '40px',
+      color: winColor,
+      fontWeight: 'bold',
+      stroke: '#000000',
+      strokeThickness: 6
+    }).setOrigin(0.5).setDepth(1000);
+
     let countdown = 3;
     if (nextRoundText) {
       nextRoundText.destroy();
     }
-    nextRoundText = scene.add.text(400, 340, '', {
+    nextRoundText = addText(scene, 400, 340, '', {
       fontSize: '24px',
       color: '#ffcc66'
     }).setOrigin(0.5).setDepth(1000);
@@ -1159,7 +1361,6 @@ function endGame(scene) {
         nextRoundText.setText('La siguiente ronda comienza ahora!');
         pendingRoundTimer.remove(false);
         pendingRoundTimer = scene.time.delayedCall(500, () => {
-          currentRound++;
           restartGame(scene, false);
           pendingRoundTimer = null;
         });
@@ -1174,11 +1375,12 @@ function restartGame(scene, resetMatch) {
     pendingRoundTimer.remove(false);
     pendingRoundTimer = null;
   }
-  resumeEventPause(scene);
   if (resetMatch) {
     currentRound = 1;
     p1RoundWins = 0;
     p2RoundWins = 0;
+  } else {
+    currentRound = Math.min(currentRound + 1, MAX_ROUNDS);
   }
   resources.forEach(res => {
     if (res.sprite) res.sprite.destroy();
@@ -1199,8 +1401,12 @@ function restartGame(scene, resetMatch) {
   p1NextShotTime = 0;
   p2NextShotTime = 0;
   
-  p1.x = 100; p1.y = 100;
-  p2.x = 700; p2.y = 550;
+  p1.x = 100; p1.y = 120;
+  p1.base.x = 50;
+  p1.base.y = 70;
+  p2.x = SCREEN_WIDTH - 120; p2.y = PLAYFIELD_HEIGHT - 20;
+  p2.base.x = SCREEN_WIDTH - 170;
+  p2.base.y = PLAYFIELD_HEIGHT - 90;
   p1.inventory = { DATA: 0, COMPUTE: 0, FUNDING: 0 };
   p2.inventory = { DATA: 0, COMPUTE: 0, FUNDING: 0 };
   if (nextRoundText) {
@@ -1228,10 +1434,6 @@ function restartGame(scene, resetMatch) {
   
   setPlayersVisible(true);
   scene.scene.restart();
-}
-
-function dist(a, b) {
-  return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
 }
 
 function setPlayerFacing(player, facing) {
@@ -1264,10 +1466,14 @@ function updatePlayerSprite(scene, player, dx, dy) {
   }
   setPlayerFacing(player, player.facing);
 
-  if (moving) {
-    player.sprite.rotation = 0;
-    player.sprite.setPosition(player.x, player.y);
+  const bobSpeed = moving ? 0.02 : 0.06;
+  const targetBob = moving ? Math.sin(player.walkPhase || 0) * 6 : 0;
+  player.walkPhase = (player.walkPhase || 0) + (absDx + absDy + 0.01) * bobSpeed * 60;
+  if (!moving) {
+    player.walkPhase = 0;
   }
+  player.sprite.rotation = 0;
+  player.sprite.setPosition(player.x, player.y + targetBob);
 }
 
 function playerHasResources(player) {
@@ -1279,11 +1485,18 @@ function playerHasResources(player) {
 
 function playerInBase(player) {
   const base = player.base;
+  const margin = HQ_CAPTURE_MARGIN;
+  const expanded = {
+    left: base.x - margin,
+    right: base.x + base.w + margin,
+    top: base.y - margin,
+    bottom: base.y + base.h + margin
+  };
   const bounds = getPlayerBounds(player);
-  return !(bounds.right < base.x ||
-           bounds.left > base.x + base.w ||
-           bounds.bottom < base.y ||
-           bounds.top > base.y + base.h);
+  return !(bounds.right < expanded.left ||
+           bounds.left > expanded.right ||
+           bounds.bottom < expanded.top ||
+           bounds.top > expanded.bottom);
 }
 
 function getPlayerBounds(player) {
@@ -1315,10 +1528,6 @@ function activateCaffeineBoost(playerNum, scene) {
   const duration = CAFFEINE_DURATION;
   if (playerNum === 1) {
     p1Boost = duration;
-    if (p1BoostText) {
-      p1BoostText.setVisible(true);
-      p1BoostText.setText('Cafeína: ' + Math.ceil(p1Boost / 1000) + 's');
-    }
     updateStatus('Jugador 1 tomo café! Impulso de velocidad!');
   } else {
     p2Boost = duration;
@@ -1356,16 +1565,6 @@ function clearProjectiles() {
   projectiles.length = 0;
 }
 
-function clearEventPopup() {
-  if (!eventPopupElements) return;
-  eventPopupElements.forEach(el => {
-    if (el && typeof el.destroy === 'function') {
-      el.destroy();
-    }
-  });
-  eventPopupElements = [];
-}
-
 function getCooldownFraction(nextShotTime) {
   if (!PROJECTILE_COOLDOWN) return 1;
   const remaining = Math.max(0, nextShotTime - lastUpdateTime);
@@ -1375,7 +1574,7 @@ function getCooldownFraction(nextShotTime) {
 function drawBackgroundPattern(layer) {
   if (!layer) return;
   layer.clear();
-  const cellSize = 40;
+  const cellSize = 60;
   for (let y = 0; y < 600; y += cellSize) {
     for (let x = 0; x < 800; x += cellSize) {
       const baseColor = BACKGROUND_COLORS[Math.floor(Math.random() * BACKGROUND_COLORS.length)];
@@ -1387,26 +1586,28 @@ function drawBackgroundPattern(layer) {
 
 function addTrailClone(scene, player, trailArray) {
   if (!scene || !player || !player.sprite) return;
-  const sprite = scene.add.image(player.sprite.x, player.sprite.y, player.currentTexture || 'char_south')
+  const textureKey = player.sprite.texture ? player.sprite.texture.key : (player.currentTexture || 'char_south');
+  const clone = scene.add.image(player.sprite.x, player.sprite.y, textureKey)
     .setOrigin(0.5, 1)
     .setDisplaySize(CHARACTER_SIZE, CHARACTER_SIZE)
     .setTint(player.color)
-    .setDepth((player.sprite.depth || 10) - 1)
-    .setAlpha(0);
-  trailArray.unshift(sprite);
+    .setFlipX(player.sprite.flipX)
+    .setBlendMode(Phaser.BlendModes.ADD)
+    .setDepth((player.sprite.depth || 10) - 0.5);
+  trailArray.unshift(clone);
   if (trailArray.length > TRAIL_MAX_CLONES) {
     const removed = trailArray.pop();
     if (removed) removed.destroy();
   }
+  refreshTrailAlpha(trailArray);
 }
 
 function refreshTrailAlpha(trailArray) {
-  for (let i = 0; i < trailArray.length; i++) {
-    const sprite = trailArray[i];
-    if (!sprite) continue;
-    const alpha = Phaser.Math.Clamp(0.85 - (i * (0.75 / TRAIL_MAX_CLONES)), 0.08, 0.85);
+  trailArray.forEach((sprite, idx) => {
+    if (!sprite) return;
+    const alpha = Phaser.Math.Clamp(0.9 - (idx * (0.75 / TRAIL_MAX_CLONES)), 0.18, 0.92);
     sprite.setAlpha(alpha);
-  }
+  });
 }
 
 function fadeTrail(trailArray, delta) {
@@ -1417,7 +1618,7 @@ function fadeTrail(trailArray, delta) {
       continue;
     }
     const newAlpha = sprite.alpha - delta * TRAIL_FADE_SPEED;
-    if (newAlpha <= 0.02) {
+    if (newAlpha <= 0.03) {
       sprite.destroy();
       trailArray.splice(i, 1);
     } else {
@@ -1426,9 +1627,17 @@ function fadeTrail(trailArray, delta) {
   }
 }
 
+function clearTrailArray(trailArray) {
+  for (let i = trailArray.length - 1; i >= 0; i--) {
+    const sprite = trailArray[i];
+    if (sprite) sprite.destroy();
+    trailArray.pop();
+  }
+}
+
 function clearTrails() {
-  p1TrailSprites.forEach(sprite => sprite && sprite.destroy());
-  p2TrailSprites.forEach(sprite => sprite && sprite.destroy());
+  p1TrailSprites.forEach(s => s && s.destroy());
+  p2TrailSprites.forEach(s => s && s.destroy());
   p1TrailSprites = [];
   p2TrailSprites = [];
   p1TrailTimer = 0;
@@ -1455,4 +1664,60 @@ function playTone(scene, freq, dur) {
   
   osc.start(ctx.currentTime);
   osc.stop(ctx.currentTime + dur);
+}
+
+function playDepositAnimation(scene, player, counts) {
+  if (!scene || !player || !counts) return;
+  const base = player.base;
+  const targetX = base.x + base.w / 2;
+  const targetY = base.y + base.h / 2;
+  const startX = player.x;
+  const startY = player.y - CHARACTER_SIZE * 0.4;
+  const iconMap = {
+    COMPUTE: 'computeIcon',
+    FUNDING: 'fundingIcon'
+  };
+  Object.entries(counts).forEach(([type, amount]) => {
+    const texture = type === 'DATA' ? ensureDataTexture(scene) : iconMap[type];
+    if (!texture) return;
+    for (let i = 0; i < amount; i++) {
+      const offsetX = (Math.random() - 0.5) * 80 + (Math.random() - 0.5) * 40;
+      const offsetY = (Math.random() - 0.5) * 60 + (Math.random() - 0.5) * 30;
+      const initialScale = type === 'DATA' ? .7 : 1.1;
+      const sprite = scene.add.image(startX + offsetX, startY + offsetY, texture)
+        .setDepth(30)
+        .setScale(initialScale)
+        .setAlpha(1);
+      
+      scene.tweens.add({
+        targets: sprite,
+        x: targetX,
+        y: targetY,
+        alpha: { from: 1, to: .25 },
+        scale: { from: initialScale, to: 0.4 },
+        duration: 450 + i * 40,
+        ease: 'Cubic.easeIn',
+        onComplete: () => sprite.destroy()
+      });
+    }
+  });
+}
+
+function showFloatingLabel(scene, text, x, y, color, direction = -1) {
+  if (!scene) return;
+  const label = addText(scene, x, y, text, {
+    fontSize: '16px',
+    color,
+    fontStyle: 'bold',
+    stroke: '#000000',
+    strokeThickness: 3
+  }).setOrigin(0.5).setDepth(50);
+  scene.tweens.add({
+    targets: label,
+    y: y + direction * 35,
+    alpha: { from: 1, to: 0 },
+    duration: 1000,
+    ease: 'Cubic.easeOut',
+    onComplete: () => label.destroy()
+  });
 }
